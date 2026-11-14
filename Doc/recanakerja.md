@@ -14,9 +14,9 @@ Sumber kebutuhan awal: [expedisi.txt](./expedisi.txt).
 - Beri label yang jelas seperti **“Data Demo”** dan **“Tracking Simulasi”**. Posisi dan rute pada peta bukan posisi aktual atau real-time.
 - Tombol dan alur demo memperlihatkan pengalaman penggunaan; tidak membuat pemesanan, pembayaran, pengiriman dokumen, atau klaim sungguhan.
 - Belum memerlukan API berbayar atau akun vendor. Integrasi sistem nyata menjadi tahap lanjutan setelah demo dan akses tersedia.
-- Demo ditujukan untuk ditunjukkan kepada klien melalui tautan GitHub Pages, bukan dengan mengirim file HTML. Repository publik: [suwandhih/expedisi](https://github.com/suwandhih/expedisi). Repository telah dibuat; demo dan GitHub Pages belum diterbitkan.
+- Demo diterbitkan melalui [GitHub Pages](https://suwandhih.github.io/expedisi/) agar klien dapat membukanya melalui tautan, tanpa mengirim file HTML. Repository publik: [suwandhih/expedisi](https://github.com/suwandhih/expedisi).
 - Pendekatan demo: aplikasi frontend statis dengan data contoh, tanpa backend atau Cloudflare. Data dalam browser tidak otomatis tersinkron antarperangkat atau pengguna.
-- Status: implementasi demo sedang dikerjakan. Repository masih kosong dan GitHub Pages belum aktif; publikasi dilakukan setelah pengujian.
+- Status: demo awal diterbitkan dan halaman dapat dibuka. Saat pengujian, peta tidak berhasil dimuat dari penyedia eksternal; riwayat pengiriman tetap dapat dibaca. Ketersediaan peta perlu ditindaklanjuti.
 - GitHub Pages adalah hosting statis, bukan database atau sistem autentikasi; halaman yang diterbitkan harus dianggap publik. Jangan gunakan data sensitif atau kredensial.
 - Repository dibuat publik atas persetujuan pemilik. Penyimpanan data demo dan detail penerbitan masih perlu ditentukan.
 
