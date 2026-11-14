@@ -120,7 +120,7 @@ $('#claim-form').addEventListener('submit', (event) => {
   $('#claim-result').textContent = `Klaim simulasi dicatat sementara · ${$('#claim-type').value} · Status: menunggu peninjauan. Tidak ada data yang dikirim atau disimpan.`;
 });
 $('#claim-description').addEventListener('input', () => $('#claim-description').setCustomValidity(''));
-fetch('data.json').then((response) => { if (!response.ok) throw new Error('Data tidak tersedia'); return response.json(); }).then((data) => {
+fetch('data.json?v=20261114-1').then((response) => { if (!response.ok) throw new Error('Data tidak tersedia'); return response.json(); }).then((data) => {
   shipments = data.shipments;
   $('#shipment-select').innerHTML = shipments.map((s, index) => `<option value="${index}">${escapeHtml(s.mode)} · ${escapeHtml(s.id)}</option>`).join('');
   renderShipment(); initMap();
