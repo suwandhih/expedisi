@@ -37,7 +37,15 @@ function renderRates() {
   $('#result-count').textContent = `${offers.length} opsi`;
   $('#rate-results').innerHTML = offers.map((offer, index) => `<article class="rate-card"><div class="vendor"><div class="vendor-logo">${offer.mark}</div><div><h4>${offer.name}</h4><span>${offer.label} · Vendor simulasi</span></div></div><div class="rate-meta"><span>ESTIMASI TRANSIT</span><strong>${offer.days} hari</strong></div><div class="rate-price"><span>TOTAL ESTIMASI</span><strong>${money(offer.total)}</strong></div><button class="button secondary choose" data-index="${index}">Pilih &amp; Book <span>→</span></button><details class="rate-details"><summary>Rincian biaya</summary><div><span>Base freight</span><strong>${money(offer.base)}</strong></div><div><span>Local charges</span><strong>${money(offer.local)}</strong></div><div><span>Total estimasi</span><strong>${money(offer.total)}</strong></div><small>USD · Tarif dan waktu hanya simulasi; bukan penawaran aktual.</small></details></article>`).join('');
 }
-$('#rate-form').addEventListener('submit', (event) => { event.preventDefault(); renderRates(); });
+$('#rate-form').addEventListener('submit', (event) => {
+  event.preventDefault();
+  const destination = $('#destination');
+  destination.setCustomValidity($('#origin').value === destination.value ? 'Negara asal dan tujuan harus berbeda.' : '');
+  if (!destination.reportValidity()) return;
+  renderRates();
+});
+$('#origin').addEventListener('change', () => $('#destination').setCustomValidity(''));
+$('#destination').addEventListener('change', () => $('#destination').setCustomValidity(''));
 $('#rate-results').addEventListener('click', (event) => {
   const button = event.target.closest('.choose');
   if (!button) return;
