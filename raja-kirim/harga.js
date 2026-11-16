@@ -23,13 +23,14 @@ function renderOffers() {
   const days = (mode.value === 'Udara' ? 6 : mode.value === 'FCL' ? 25 : 28) + (country === 'Amerika Serikat' ? 5 : 0);
   const offers = vendors.map((vendor) => ({ ...vendor, freight: base + vendor.adjustment, total: base + vendor.adjustment + vendor.local, transit: Math.max(1, days + vendor.days) })).sort((a, b) => a.total - b.total);
   const route = direction === 'ekspor' ? `Jakarta → ${country}` : `${country} → Jakarta`;
+  const highestTotal = Math.max(...offers.map((offer) => offer.total));
   document.querySelector('#summary').textContent = `${direction === 'ekspor' ? 'Ekspor' : 'Impor'} · ${route} · ${mode.value === 'Udara' ? 'Udara' : 'Laut · ' + mode.value}`;
   document.querySelector('#count').textContent = `${offers.length} alternatif ekspedisi`;
   document.querySelector('#results-note').textContent = `ⓘ Harga dalam USD, termasuk biaya lokal contoh. Perkiraan Rupiah memakai kurs contoh ${rupiah(kurs)} per USD. Estimasi transit dan tarif bukan penawaran aktual.`;
   document.querySelector('#offers').innerHTML = offers.map((offer, index) => `
-    <article class="offer bc-card bc-card--raised">
+    <article class="offer bc-card bc-card--raised${index === 0 ? ' offer--best' : ''}">
       <div class="offer-tags">
-        <span class="bc-badge ${mode.value === 'Udara' ? 'bc-badge--accent' : mode.value === 'LCL' ? 'bc-badge--primary' : 'bc-badge--muted'}">${mode.value === 'Udara' ? 'Udara' : 'Laut · ' + mode.value}</span>
+        <span class="bc-badge ${mode.value === 'Udara' ? 'bc-badge--accent' : mode.value === 'LCL' ? 'bc-badge--primary' : 'bc-badge--secondary'}">${mode.value === 'Udara' ? 'Udara' : 'Laut · ' + mode.value}</span>
         <span class="bc-badge ${index === 0 ? 'bc-badge--primary' : 'bc-badge--secondary'}">${offer.label}</span>
       </div>
       <div class="offer-heading">
@@ -41,6 +42,7 @@ function renderOffers() {
         <div><span>TOTAL ESTIMASI</span><strong class="price">${money(offer.total)}</strong><small class="price-idr bc-muted">≈ ${rupiah(offer.total * kurs)}</small></div>
         <div><span>ESTIMASI TRANSIT</span><strong>${offer.transit} hari</strong></div>
       </div>
+      <div class="offer-meter" aria-hidden="true"><span style="--offer-share: ${offer.total / highestTotal * 100}%"></span></div>
       <details>
         <summary>Rincian biaya</summary>
         <div><span>Biaya pengiriman</span><strong>${money(offer.freight)}</strong></div>

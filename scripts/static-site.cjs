@@ -95,7 +95,7 @@ function check() {
   assert.match(home, /href="lintas-samudra\/index\.html"/, 'Pilihan halaman Lintas Samudra tidak tersedia');
   assert.match(lintas, /href="\.\.\/raja-kirim\/index\.html"/, 'Navigasi ke Raja Kirim tidak tersedia');
   assert.match(raja, /href="\.\.\/lintas-samudra\/index\.html"/, 'Navigasi ke Lintas Samudra tidak tersedia');
-  const comparisonSections = ['<header', 'Mode demo.', 'comparison-hero', 'comparison-planner', 'class="results"', 'class="next"', '<footer'];
+  const comparisonSections = ['<header', 'Mode demo.', 'comparison-hero', 'comparison-planner', 'class="results"', 'class="next bc-card"', '<footer'];
   let previousSection = -1;
   for (const section of comparisonSections) {
     const position = raja.indexOf(section);

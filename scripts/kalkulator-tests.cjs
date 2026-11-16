@@ -62,10 +62,16 @@ module.exports = function checkCalculator(sources, sandbox) {
         assert.equal(nodes.get('#origin-label').textContent, direction === 'ekspor' ? 'Kota asal' : 'Negara asal');
         assert.equal(nodes.get('#destination-label').textContent, direction === 'ekspor' ? 'Negara tujuan' : 'Kota tujuan');
         assert.equal(nodes.get('#results-note').textContent, `ⓘ Harga dalam USD, termasuk biaya lokal contoh. Perkiraan Rupiah memakai kurs contoh ${rupiah(16000)} per USD. Estimasi transit dan tarif bukan penawaran aktual.`);
-        assert.equal((output.match(/<article class="offer bc-card bc-card--raised">/g) || []).length, 3);
+        assert.equal((output.match(/<article class="offer bc-card bc-card--raised(?: offer--best)?">/g) || []).length, 3);
+        assert.equal((output.match(/ offer--best"/g) || []).length, 1, 'Hanya satu kartu yang ditonjolkan');
+        assert.match(output.trim(), /^<article class="offer bc-card bc-card--raised offer--best">/, 'Tonjolkan harga terendah');
+        const shares = [...output.matchAll(/<div class="offer-meter" aria-hidden="true"><span style="--offer-share: ([\d.]+)%"><\/span><\/div>/g)].map((match) => Number(match[1]));
+        const expectedTotals = legacyVendors.map((vendor) => base + vendor.adjustment + vendor.local);
+        assert.deepEqual(shares, expectedTotals.map((total) => total / Math.max(...expectedTotals) * 100), 'Meter dekoratif harus mengikuti proporsi total tanpa mengubah biaya');
+        assert(shares.every((share) => share > 0 && share <= 100));
         assert.equal((output.match(/<details>\s*<summary>Rincian biaya<\/summary>/g) || []).length, 3);
         assert.equal((output.match(/class="offer-route"/g) || []).length, 3);
-        const modeBadge = mode === 'Udara' ? 'accent' : mode === 'LCL' ? 'primary' : 'muted';
+        const modeBadge = mode === 'Udara' ? 'accent' : mode === 'LCL' ? 'primary' : 'secondary';
         assert(output.includes(`bc-badge--${modeBadge}">${mode === 'Udara' ? 'Udara' : 'Laut · ' + mode}</span>`));
         assert(output.includes('bc-badge--primary">Harga terendah</span>'));
         assert.equal([...output.matchAll(/<p class="offer-route">([^<]+)<\/p>/g)].filter((match) => match[1] === route).length, 3, 'Semua kartu harus memakai rute yang sama');

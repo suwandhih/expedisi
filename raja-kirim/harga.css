@@ -161,3 +161,102 @@ footer.shell { display: flex; align-items: center; justify-content: space-betwee
 @media (prefers-reduced-motion: reduce) {
   html { scroll-behavior: auto; }
 }
+
+/* Design C comparison-only overrides. Keep the shared calculator rules above unchanged. */
+body.comparison-page .comparison-hero {
+  background: linear-gradient(115deg in srgb,
+    color-mix(in srgb, var(--brand-primary) 95%, var(--brand-foreground)),
+    color-mix(in srgb, var(--brand-accent-2) 80%, var(--brand-foreground)));
+  color: var(--brand-white);
+  isolation: isolate;
+}
+body.comparison-page .comparison-hero h1 { color: var(--brand-white); }
+body.comparison-page .comparison-hero .intro-link { min-height: 56px; }
+body.comparison-page .comparison-hero :focus-visible { outline-color: var(--brand-white); }
+body.comparison-page .intro-card {
+  background: color-mix(in srgb, var(--brand-primary) 60%, var(--brand-foreground));
+  box-shadow: 0 24px 48px -16px color-mix(in srgb, var(--brand-foreground) 40%, transparent);
+}
+body.comparison-page .graphic-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
+body.comparison-page .graphic-top > span { font-size: 9px; letter-spacing: 0; }
+body.comparison-page .graphic-bottom { font-size: 13px; line-height: 1.5; }
+body.comparison-page .comparison-planner {
+  margin-top: -64px;
+  border-color: var(--brand-border);
+  box-shadow: 0 24px 56px -24px color-mix(in srgb, var(--brand-primary) 32%, transparent),
+    0 4px 12px color-mix(in srgb, var(--brand-foreground) 5%, transparent);
+}
+body.comparison-page .comparison-planner .bc-tiles { max-width: none; }
+body.comparison-page .comparison-planner .bc-tile > span { position: relative; min-height: 104px; padding-right: 48px; }
+body.comparison-page .comparison-planner .bc-tile > input:checked + span::after {
+  content: '✓';
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: var(--radius-full);
+  background: var(--brand-primary);
+  color: var(--brand-primary-foreground);
+  font-size: 14px;
+  font-weight: 800;
+}
+body.comparison-page .fields .bc-select,
+body.comparison-page .fields .bc-btn { min-height: 52px; }
+body.comparison-page .offers { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; }
+body.comparison-page .offer {
+  display: flex;
+  flex-direction: column;
+  border-top: 4px solid var(--brand-border);
+}
+body.comparison-page .offer--best {
+  border-color: var(--brand-primary);
+  box-shadow: 0 24px 48px -20px color-mix(in srgb, var(--brand-primary) 32%, transparent);
+}
+body.comparison-page .offer--best .vendor-icon { background: var(--brand-primary); color: var(--brand-primary-foreground); }
+body.comparison-page .offer-tags { margin-bottom: 24px; }
+body.comparison-page .offer-data { flex: 1; }
+body.comparison-page .offer-data .price { font-size: clamp(32px, 3vw, 42px); line-height: 1.2; }
+body.comparison-page .offer-data .price-idr { display: block; margin-top: 8px; font-size: 13px; font-weight: 500; letter-spacing: 0; }
+body.comparison-page .offer-meter {
+  height: 6px;
+  margin-bottom: 20px;
+  overflow: hidden;
+  border-radius: var(--radius-full);
+  background: var(--brand-muted);
+}
+body.comparison-page .offer-meter > span {
+  display: block;
+  width: var(--offer-share);
+  height: 100%;
+  border-radius: inherit;
+  background: color-mix(in srgb, var(--brand-primary) 55%, var(--brand-secondary));
+}
+body.comparison-page .offer--best .offer-meter > span { background: var(--brand-primary); }
+body.comparison-page .offer details { padding-top: 8px; }
+body.comparison-page .offer summary { display: list-item; min-height: 44px; padding-block: 12px; }
+body.comparison-page .offer details div { align-items: baseline; }
+body.comparison-page .next.bc-card {
+  border-color: color-mix(in srgb, var(--brand-accent-2) 25%, var(--brand-accent));
+  background: var(--brand-accent);
+  color: var(--brand-accent-foreground);
+  box-shadow: none;
+}
+body.comparison-page footer a { display: inline-flex; align-items: center; min-height: 44px; }
+@media (max-width: 850px) {
+  body.comparison-page .offers { grid-template-columns: minmax(0, 1fr); }
+  body.comparison-page .intro-card { display: none; }
+}
+@media (max-width: 600px) {
+  body.comparison-page .comparison-planner { margin-top: -56px; }
+  body.comparison-page .comparison-planner .bc-tile > span { min-height: 112px; padding: 36px 12px 12px; }
+  body.comparison-page .comparison-planner .bc-tile > input:checked + span::after { top: 10px; right: 10px; width: 20px; height: 20px; font-size: 12px; }
+  body.comparison-page .offer-data .price { font-size: 38px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  body.comparison-page .bc-btn,
+  body.comparison-page .bc-nav a,
+  body.comparison-page .bc-tile > span { transition: none; }
+}

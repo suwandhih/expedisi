@@ -34,6 +34,61 @@ module.exports = function checkBrand(sources) {
   assert.match(prices, /<strong class="price">[\s\S]*?<\/strong><small class="price-idr bc-muted">≈ /, 'Perkiraan Rupiah harus kecil dan tepat di bawah harga USD');
   assert.match(prices, /<details>[\s\S]*?<summary>Rincian biaya<\/summary>/);
 
+  assert.match(raja, /<h1 id="hero-title">Pengiriman lebih pasti\.<\/h1>/);
+  assert.match(raja, /class="intro-link bc-btn bc-btn--lg bc-btn--pill" href="#form-title">Mulai bandingkan ↘/);
+  assert.match(raja, /class="search-card comparison-planner bc-card bc-card--raised"/);
+  assert.match(raja, /class="next bc-card"/);
+  assert.match(raja, /class="bc-btn bc-btn--accent bc-btn--lg" href="surat\.html">Buka surat &amp; dokumen →/);
+  assert.equal((raja.match(/class="bc-tile"/g) || []).length, 2);
+  assert.equal((raja.match(/aria-current="page"/g) || []).length, 1);
+  for (const link of ['index.html', 'kalkulator.html', 'surat.html#pelanggan', 'surat.html']) {
+    const navigation = raja.match(/<nav\b[^>]*>[\s\S]*?<\/nav>/)?.[0];
+    assert(navigation && navigation.includes(`href="${link}"`), `Navigasi perbandingan harus berupa tautan nyata: ${link}`);
+  }
+
+  const pageCSS = sources.get('raja-kirim/harga.css');
+  const scopeMarker = '/* Design C comparison-only overrides.';
+  assert(pageCSS.includes(scopeMarker), 'Aturan Desain C harus terpisah dari CSS kalkulator');
+  const scopedCSS = pageCSS.slice(pageCSS.indexOf(scopeMarker)).replace(/\/\*[\s\S]*?\*\//g, '');
+  const rules = [...scopedCSS.matchAll(/([^{}]+)\{([^{}]*)\}/g)];
+  assert(rules.length >= 20, 'Pemeriksaan harus mencakup seluruh aturan Desain C');
+  for (const [, selectors] of rules) {
+    assert(selectors.split(',').every((selector) => selector.trim().startsWith('body.comparison-page ')), `Aturan bocor ke halaman lain: ${selectors.trim()}`);
+  }
+  assert.match(scopedCSS, /body\.comparison-page \.offers\s*\{\s*grid-template-columns: repeat\(3, minmax\(0, 1fr\)\)/, 'Desktop 1280px: tiga kolom');
+  assert.match(scopedCSS, /@media \(max-width: 850px\)\s*\{\s*body\.comparison-page \.offers\s*\{ grid-template-columns: minmax\(0, 1fr\); \}/, 'Ponsel 390px: satu kolom');
+  assert.match(scopedCSS, /@media \(max-width: 850px\)[\s\S]*?body\.comparison-page \.intro-card \{ display: none; \}/);
+  assert.match(scopedCSS, /body\.comparison-page \.comparison-planner\s*\{\s*margin-top: -64px;/);
+  assert.match(scopedCSS, /body\.comparison-page \.offer-data \.price-idr \{ display: block;/);
+  assert.match(scopedCSS, /body\.comparison-page \.offer summary \{[^}]*min-height: 44px;/);
+  assert.match(scopedCSS, /body\.comparison-page \.fields \.bc-select,[\s\S]*?min-height: 52px;/);
+  assert.match(scopedCSS, /body\.comparison-page \.comparison-hero :focus-visible \{ outline-color: var\(--brand-white\); \}/);
+  assert.match(scopedCSS, /@media \(prefers-reduced-motion: reduce\)[\s\S]*?transition: none;/);
+  assert.match(scopedCSS, /body\.comparison-page \.next\.bc-card \{[^}]*background: var\(--brand-accent\);/);
+  assert.match(scopedCSS, /width: var\(--offer-share\);/);
+
+  // Compute contrast from the actual managed tokens and sRGB gradient stops.
+  const tokenCSS = sources.get('src/styles/design-tokens.css');
+  const colour = (name) => {
+    const value = tokenCSS.match(new RegExp(`--${name}:\\s*(#[\\da-f]{6});`, 'i'))?.[1];
+    assert(value, `Token warna tidak ditemukan: ${name}`);
+    return [1, 3, 5].map((offset) => Number.parseInt(value.slice(offset, offset + 2), 16));
+  };
+  const mix = (a, b, weight) => a.map((channel, i) => channel * weight + b[i] * (1 - weight));
+  const luminance = (channels) => channels.map((channel) => {
+    const value = channel / 255;
+    return value <= 0.04045 ? value / 12.92 : ((value + 0.055) / 1.055) ** 2.4;
+  }).reduce((sum, channel, i) => sum + channel * [0.2126, 0.7152, 0.0722][i], 0);
+  const heroRule = rules.find(([, selectors]) => selectors.trim() === 'body.comparison-page .comparison-hero')?.[2];
+  assert(heroRule && heroRule.includes('linear-gradient(115deg in srgb,'));
+  const stops = [...heroRule.matchAll(/color-mix\(in srgb, var\(--(brand-[\w-]+)\) (\d+)%, var\(--(brand-[\w-]+)\)\)/g)]
+    .map(([, a, percentage, b]) => mix(colour(a), colour(b), Number(percentage) / 100));
+  assert.equal(stops.length, 2);
+  const white = luminance(colour('brand-white'));
+  const contrasts = Array.from({ length: 101 }, (_, i) => (white + 0.05) / (luminance(mix(stops[0], stops[1], i / 100)) + 0.05));
+  assert(contrasts.every((contrast) => contrast >= 4.5), 'Teks putih pada seluruh gradasi hero harus memenuhi WCAG AA');
+  console.log(`OK Desain C: urutan/navigasi, CSS terisolasi, breakpoint 1280/390, fokus/target sentuh/reduced motion, kontras hero minimal ${Math.min(...contrasts).toFixed(2)}:1 (bukan uji render browser).`);
+
   // Keep generated and static controls on the same shared primitives.
   for (const file of ['index.html', 'lintas-samudra/index.html', 'raja-kirim/index.html', 'raja-kirim/kalkulator.html', 'raja-kirim/surat.html', 'lintas-samudra/app.js', 'raja-kirim/surat.js']) {
     const source = sources.get(file);
