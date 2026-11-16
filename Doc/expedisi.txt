@@ -1,0 +1,225 @@
+alur operasional standar dari awal hingga barang tiba di tujuan (yang perlu diakomodasi oleh sistem aplikasi Anda):
+
+Tahap Pra-Pengiriman & Perbandingan Tarif (Quoting & Booking):
+
+Klien memilih rute (misalnya Malaysia/Tiongkok ke AS/Australia).
+
+Sistem menarik tarif dari berbagai alternatif (laut/udara) menggunakan API atau data masukan manual.
+
+Klien menyetujui harga (Instant Booking).
+
+Tahap Dokumen & Bea Cukai Asal (Documentation & Customs Clearance):
+
+Pembuatan Commercial Invoice, Packing List, dan Bill of Lading (B/L) untuk laut atau Air Waybill (AWB) untuk udara.
+
+Pengurusan dokumen kepabeanan ekspor di negara asal.
+
+Tahap Pengiriman Fisik (Pickup & Transit):
+
+Barang dijemput (pickup) dari gudang pengirim ke pelabuhan/bandara (Origin Port/Airport).
+
+Proses muat (Loading) ke kontainer atau pesawat.
+
+Perjalanan lintas negara (dipantau via sistem tracking AIS untuk laut atau checkpoint bandara untuk udara).
+
+Tahap Bea Cukai Tujuan & Bongkar Muat (Destination Customs & Delivery):
+
+Kapal/pesawat tiba di negara tujuan (misalnya AS atau Australia).
+
+Proses Customs Clearance impor (pembayaran bea masuk & pajak oleh penerima).
+
+Pengiriman akhir (Last-Mile Delivery) dari pelabuhan/gudang tujuan ke alamat penerima (door-to-door).
+
+Tahap Pasca-Pengiriman (Post-Delivery):
+
+Konfirmasi penerimaan barang (Proof of Delivery / POD).
+
+Arsip dokumen digital dan rekapitulasi tagihan/pembayaran.
+
+----------------------------------------
+
+
+--------------------------------------
+
+Bertindaklah sebagai Frontend Engineer dan UI/UX Designer. Buatkan saya kode (HTML/CSS/Tailwind atau komponen React) untuk halaman "Perbandingan Harga Ekspedisi Internasional" yang bersih, modern, dan mendukung Dark Mode. 
+
+Desain harus responsif (nyaman digunakan di layar PC maupun HP). Halaman ini harus menampilkan:
+1. Kolom Input: Negara Asal (Malaysia, Singapura, Tiongkok, Vietnam, dll.) dan Negara Tujuan (Amerika, Australia, dll.), serta pilihan moda (Laut FCL/LCL vs Udara).
+2. Tabel/Kartu Perbandingan: Menampilkan daftar pilihan vendor/tarif yang diurutkan otomatis dari harga termurah, lengkap dengan estimasi waktu tiba (ETA) dan rincian biaya (Base Freight + Local Charges).
+3. Tombol Aksi: Tombol "Pilih & Book" untuk memilih opsi terbaik.
+
+
+Bertindaklah sebagai Senior System Analyst di bidang Logistik Internasional. Bantu saya merancang alur kerja sistem (Workflow State Machine) untuk aplikasi ekspedisi dari awal pemesanan hingga barang sampai di tujuan.
+
+Tolong buatkan tahapan status operasional secara berurutan beserta data apa saja yang harus dicatat oleh sistem pada setiap tahap:
+1. Tahap Booking & Quotation
+2. Tahap Dokumen & Kepabeanan Asal (Customs Export)
+3. Tahap Pengiriman & Transit (Tracking Status)
+4. Tahap Kepabeanan Tujuan & Last-Mile Delivery (Customs Import)
+5. Tahap Selesai (Proof of Delivery / POD)
+
+
+Bertindaklah sebagai Backend & Integration Engineer. Berikan saya contoh struktur logika atau skrip (dalam Node.js atau Python) untuk menangani pelacakan (*tracking*) kiriman secara real-time.
+
+Sistem harus bisa membedakan:
+1. Jika moda pengiriman LAUT (Ocean), bagaimana cara sistem menarik data status berdasarkan nomor kontainer atau B/L.
+2. Jika moda pengiriman UDARA (Air), bagaimana cara sistem melacak berdasarkan nomor AWB (Air Waybill).
+Sertakan struktur JSON yang ideal untuk menyimpan riwayat checkpoint perjalanan paket tersebut agar bisa ditampilkan di aplikasi HP dan PC.
+
+
+Bertindaklah sebagai Operations Manager perusahaan logistik. Buatkan panduan sistem atau fitur apa saja yang harus disiapkan oleh aplikasi pada tahap "Pasca-Pengiriman" (setelah barang diterima oleh klien di luar negeri). 
+
+Fokuskan pada:
+1. Konfirmasi bukti terima barang (Proof of Delivery / POD digital bermatra/tanda tangan).
+2. Penyimpanan arsip dokumen kepabeanan secara digital (wajib disimpan untuk audit).
+3. Penanganan klaim atau komplain jika ada kerusakan/keterlambatan di jalan.
+
+
+tracking paket / kontainer saya perlu maps secara real jalur pengantaran sampai dimana 
+contoh C:\data\Peta dunia  atau https://suwandhih.github.io/petadunia/app/index.html
+
+
+Simulasi Data JSON: Perbandingan Harga + Status Tracking Real-Time
+Struktur data di bawah ini adalah contoh bagaimana aplikasi Anda nantinya menarik informasi harga dari berbagai negara (Malaysia, Tiongkok, dll.) sekaligus memantau posisi kontainer atau kargo udara di satu tempat:
+{
+  "shipment_order_id": "ORD-2026-1114-089",
+  "route": {
+    "origin_country": "Malaysia",
+    "origin_port": "MYPKG (Port Klang)",
+    "destination_country": "United States",
+    "destination_port": "USLAX (Los Angeles)"
+  },
+  
+  "rate_comparison_options": [
+    {
+      "vendor_name": "WebCargo Aggregator (Economy Line)",
+      "transport_mode": "OCEAN_FCL",
+      "container_type": "40FT",
+      "transit_time_days": 32,
+      "total_cost_usd": 2450.00,
+      "status": "Selected by Client"
+    },
+    {
+      "vendor_name": "Maersk Direct API",
+      "transport_mode": "OCEAN_FCL",
+      "container_type": "40FT",
+      "transit_time_days": 28,
+      "total_cost_usd": 2890.00,
+      "status": "Alternative"
+    }
+  ],
+
+  "live_tracking_status": {
+    "tracking_number": "MSKU9876543",
+    "carrier": "Maersk Line",
+    "current_status": "IN_TRANSIT",
+    "last_checkpoint": "Singapore Port (SGSIN)",
+    "timestamp": "2026-11-14T08:30:00Z",
+    "estimated_time_of_arrival": "2026-12-16T15:00:00Z",
+    "coordinates": {
+      "latitude": 1.290270,
+      "longitude": 103.851959
+    },
+    "checkpoint_history": [
+      {
+        "step": 1,
+        "location": "Port Klang, Malaysia",
+        "activity": "Container Loaded & Vessel Departed",
+        "date": "2026-11-10"
+      },
+      {
+        "step": 2,
+        "location": "Singapore Port",
+        "activity": "Transshipment Hub - Port Stop",
+        "date": "2026-11-13"
+      }
+    ]
+  }
+}
+
+
+membuatkan kode pemrograman (misalnya script backend atau frontend) yang menampilkan simulasi data perbandingan harga sekaligus fitur tracking ini ke dalam bentuk tabel/dashboard yang bisa dibuka di PC dan HP,
+Ya, mari kita buatkan **simulasi data perbandingan harga dan tracking** agar Anda memiliki gambaran nyata bagaimana data tersebut disajikan dalam aplikasi (baik di tampilan PC maupun HP).
+
+Mengenai pertanyaan Anda: **Apakah tadi sudah termasuk *tracking* kontainer pengiriman?**
+Pada penjelasan sebelumnya baru sebatas *konsep alur dan arsitekturnya*. Di bawah ini, saya lengkapi langsung dengan **simulasi data nyata (JSON payload)** yang menggabungkan **perbandingan harga sekaligus modul pelacakan (*real-time container & air tracking*)** di dalam satu sistem aplikasi.
+
+---
+
+### Simulasi Data JSON: Perbandingan Harga + Status Tracking Real-Time
+
+Struktur data di bawah ini adalah contoh bagaimana aplikasi Anda nantinya menarik informasi harga dari berbagai negara (Malaysia, Tiongkok, dll.) sekaligus memantau posisi kontainer atau kargo udara di satu tempat:
+
+```json
+{
+  "shipment_order_id": "ORD-2026-1114-089",
+  "route": {
+    "origin_country": "Malaysia",
+    "origin_port": "MYPKG (Port Klang)",
+    "destination_country": "United States",
+    "destination_port": "USLAX (Los Angeles)"
+  },
+  
+  "rate_comparison_options": [
+    {
+      "vendor_name": "WebCargo Aggregator (Economy Line)",
+      "transport_mode": "OCEAN_FCL",
+      "container_type": "40FT",
+      "transit_time_days": 32,
+      "total_cost_usd": 2450.00,
+      "status": "Selected by Client"
+    },
+    {
+      "vendor_name": "Maersk Direct API",
+      "transport_mode": "OCEAN_FCL",
+      "container_type": "40FT",
+      "transit_time_days": 28,
+      "total_cost_usd": 2890.00,
+      "status": "Alternative"
+    }
+  ],
+
+  "live_tracking_status": {
+    "tracking_number": "MSKU9876543",
+    "carrier": "Maersk Line",
+    "current_status": "IN_TRANSIT",
+    "last_checkpoint": "Singapore Port (SGSIN)",
+    "timestamp": "2026-11-14T08:30:00Z",
+    "estimated_time_of_arrival": "2026-12-16T15:00:00Z",
+    "coordinates": {
+      "latitude": 1.290270,
+      "longitude": 103.851959
+    },
+    "checkpoint_history": [
+      {
+        "step": 1,
+        "location": "Port Klang, Malaysia",
+        "activity": "Container Loaded & Vessel Departed",
+        "date": "2026-11-10"
+      },
+      {
+        "step": 2,
+        "location": "Singapore Port",
+        "activity": "Transshipment Hub - Port Stop",
+        "date": "2026-11-13"
+      }
+    ]
+  }
+}
+
+```
+
+---
+
+Membuat Fitur Simulasi Data & Tracking di Aplikasi
+
+Jika Anda ingin meminta AI membuatkan kode pemrograman (misalnya script backend atau frontend) yang menampilkan simulasi data perbandingan harga sekaligus fitur *tracking* ini ke dalam bentuk tabel/dashboard yang bisa dibuka di PC dan HP, gunakan *prompt* berikut:
+
+> *"Bertindaklah sebagai Full-Stack Developer. Buatkan saya kode komponen frontend (HTML/Tailwind CSS atau React) untuk menampilkan **Dashboard Logistik** yang responsif di PC dan HP. Dashboard ini harus memiliki dua bagian utama:*
+> *1. **Tabel Perbandingan Harga:** Menampilkan pilihan tarif dari berbagai vendor (misalnya dari Malaysia/Tiongkok ke AS/Australia) yang diurutkan dari yang termurah, lengkap dengan tombol pilih.*
+> *2. **Panel Live Tracking:** Menampilkan status perjalanan kontainer/kargo secara real-time berdasarkan data JSON di atas (meliputi status pelabuhan asal, posisi transit saat ini, koordinat, dan estimasi tanggal tiba/ETA).*
+> *Pastikan tampilannya bersih, modern, mendukung dark mode, dan nyaman dilihat di layar kecil (HP) maupun layar besar (PC)."*
+
+
+UI desing tolong di carikan yg clean tidak berlalu bermain warna.. dengan navigasi yg mudah orang mengerti dan nyaman 
+cari di https://www.awwwards.com/  

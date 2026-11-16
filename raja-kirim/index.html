@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="id">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="description" content="Raja Kirim: demo perbandingan harga ekspor dan impor.">
+  <title>Raja Kirim — Perbandingan Harga</title>
+  <link rel="stylesheet" href="harga.css">
+  <script defer src="harga.js"></script>
+</head>
+<body>
+  <a class="skip" href="#konten">Langsung ke konten</a>
+  <header class="header">
+    <div class="header-inner">
+      <a href="index.html" class="brand"><span class="brand-icon">↗</span><span>raja<span>kirim</span><small>SIMULASI EKSPEDISI</small></span></a>
+      <nav aria-label="Navigasi utama"><a class="active" aria-current="page" href="index.html">Perbandingan harga</a><a href="surat.html#pelanggan">Pelanggan</a><a href="surat.html">Surat &amp; dokumen</a></nav>
+      <a class="old-demo" href="../index.html">Demo lama ↗</a>
+    </div>
+  </header>
+  <main id="konten" class="shell">
+    <div class="notice"><span>ⓘ</span><p><strong>Mode demo.</strong> Semua harga dan data adalah contoh. Tidak ada layanan yang terhubung atau pesan yang benar-benar dikirim.</p></div>
+    <section class="intro"><div class="intro-copy"><div class="eyebrow"><span class="intro-dot"></span> EKSPOR &amp; IMPOR / LEBIH SEDERHANA</div><h1>Pengiriman<br>lebih <span>pasti.</span></h1><p>Bandingkan alternatif harga ekspor dan impor, lalu siapkan penawaran pelanggan di satu tempat.</p><a class="intro-link" href="#form-title">Mulai bandingkan <span>↘</span></a></div><div class="intro-card" aria-hidden="true"><div class="graphic-top"><span>RAJA KIRIM / GLOBAL</span><span>01 — 03</span></div><div class="graphic-orbit orbit-one"></div><div class="graphic-orbit orbit-two"></div><div class="graphic-route"></div><span class="graphic-point point-one"></span><span class="graphic-point point-two"></span><span class="graphic-label label-one">JAKARTA <small>ID</small></span><span class="graphic-label label-two">GLOBAL <small>WORLDWIDE</small></span><div class="graphic-bottom"><span>BUILT FOR<br>BETTER MOVES.</span><span>↗</span></div></div></section>
+    <section class="search-card" aria-labelledby="form-title">
+      <div class="section-top"><div><div class="eyebrow">MULAI DI SINI</div><h2 id="form-title">Rencanakan pengiriman</h2><p>Pilih jenis pengiriman, rute, dan moda untuk membandingkan tarif contoh.</p></div><span class="badge">DATA SIMULASI</span></div>
+      <form id="rate-form">
+        <fieldset class="direction"><legend>JENIS PENGIRIMAN</legend><label><input type="radio" name="direction" value="ekspor" checked> <span>↗ &nbsp; Ekspor <small>Dari Indonesia</small></span></label><label><input type="radio" name="direction" value="impor"> <span>↙ &nbsp; Impor <small>Ke Indonesia</small></span></label></fieldset>
+        <div class="fields"><label>NEGARA ASAL<select id="origin" aria-label="Negara asal"></select></label><span class="route-arrow" aria-hidden="true">→</span><label>NEGARA TUJUAN<select id="destination" aria-label="Negara tujuan"></select></label><label>MODA PENGIRIMAN<select id="mode"><option value="LCL">Laut · LCL</option><option value="FCL">Laut · FCL</option><option value="Udara">Udara</option></select></label><button class="button primary" type="submit">Bandingkan harga <span>→</span></button></div>
+      </form>
+    </section>
+    <section class="results" aria-labelledby="results-title"><div class="results-top"><div><div class="eyebrow">PILIHAN UNTUK ANDA</div><h2 id="results-title">Alternatif pengiriman <span id="count" class="count"></span></h2><p id="summary"></p></div><span class="sort">↑ Diurutkan dari harga terendah</span></div><div id="offers" class="offers" aria-live="polite"></div><p class="results-note">ⓘ &nbsp; Harga dalam USD, termasuk biaya lokal contoh. Estimasi transit dan tarif bukan penawaran aktual.</p></section>
+    <section class="next"><div><div class="eyebrow">LANGKAH SELANJUTNYA</div><h2>Siapkan penawaran untuk pelanggan.</h2><p>Buat surat dan lihat contoh pengiriman email atau WhatsApp, semuanya dalam mode simulasi.</p></div><a class="button primary" href="surat.html">Buka surat &amp; dokumen <span>→</span></a></section>
+  </main>
+  <footer class="shell"><span>© Raja Kirim · Demo ekspedisi</span><span>Hanya simulasi · Tidak terhubung ke layanan nyata</span></footer>
+</body>
+</html>
