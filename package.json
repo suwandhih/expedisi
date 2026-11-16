@@ -1,0 +1,17 @@
+{
+  "name": "expedisi-static-preview",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Tooling Preview untuk situs statis Expedisi; bukan backend aplikasi.",
+  "engines": {
+    "node": "24.x"
+  },
+  "scripts": {
+    "check": "node scripts/static-site.cjs check",
+    "build": "node scripts/static-site.cjs build",
+    "dev": "npm run build && NO_UPDATE_CHECK=1 serve --no-clipboard --config ../serve.json dist"
+  },
+  "devDependencies": {
+    "serve": "14.2.8"
+  }
+}

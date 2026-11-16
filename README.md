@@ -10,6 +10,17 @@ Demo baru tersedia di [`raja-kirim/index.html`](raja-kirim/index.html); demo Lin
 
 Sajikan direktori ini dengan server HTTP statis dan buka alamat server tersebut. Misalnya `npx serve .` jika tersedia. Jangan membuka `index.html` langsung melalui `file://`, karena pemuatan `data.json` memerlukan HTTP. Semua path aplikasi bersifat relatif sehingga dapat dilayani dari subpath GitHub Pages tanpa konfigurasi build. Tidak perlu akun atau API key.
 
+### Preview di Software Foundry
+
+Profil `node-24` digunakan hanya untuk alat pemeriksaan dan server HTTP statis `serve@14.2.8`; aplikasi tetap HTML/CSS/JavaScript asli, tanpa backend atau proses kompilasi frontend. Manifest npm hanya menambahkan alat server statis. Instalasi pertama menghasilkan `package-lock.json`; instalasi selanjutnya memakai `npm ci` agar versi dependensi tetap sama.
+
+- Periksa sintaks JavaScript, tautan/aset lokal, dan konsistensi data contoh: `node scripts/static-site.cjs check`.
+- Siapkan berkas publik: `node scripts/static-site.cjs build`.
+- Skrip `dev` di `package.json` menjalankan server pada folder `dist/` menggunakan `PORT` yang diberikan platform; `.cdf/runtime.json` memilih profil tooling. Hanya berkas situs yang disajikan; dokumen internal dan konfigurasi proyek tidak ikut disalin.
+- Buka Preview untuk Lintas Samudra (`/`), atau tambahkan `/raja-kirim/` untuk demo Raja Kirim dan `/raja-kirim/surat.html` untuk surat dan pelanggan.
+- Setelah mengubah sumber statis, build ulang lalu restart Preview. Situs ini tidak menggunakan HMR.
+- Untuk memeriksa respons halaman/aset dan penolakan akses berkas internal tanpa browser: `node scripts/static-site.cjs http <alamat-preview>`.
+
 Data contoh pengiriman dan checkpoint tersedia di `data.json`; tarif contoh dihitung di `app.js`. Jangan masukkan data sensitif: GitHub Pages bersifat publik. Integrasi nyata, akses dokumen, retensi, kepatuhan, dan tanda tangan membutuhkan desain terpisah.
 
 ## Peta dan jaringan

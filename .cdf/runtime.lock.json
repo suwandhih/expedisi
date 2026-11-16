@@ -1,0 +1,22 @@
+{
+  "schemaVersion": 1,
+  "provisioning": "base-image",
+  "builderImage": null,
+  "baseImage": "5fb425b2f8b08e6fb0fc8e344839f0db6c1f75bb1e1391e02aaa243c1f3be33c",
+  "profile": "node-24",
+  "requirements": {
+    "node": "24.19.0"
+  },
+  "runtimes": [
+    {
+      "language": "node",
+      "version": "24.19.0",
+      "source": "base-image",
+      "image": "5fb425b2f8b08e6fb0fc8e344839f0db6c1f75bb1e1391e02aaa243c1f3be33c"
+    }
+  ],
+  "storePaths": [],
+  "warnings": [],
+  "toolchainId": "4d7de2566253e0ee6014be25d203f2a01794f35dd9a53b265cad527b88693cd0",
+  "image": "5fb425b2f8b08e6fb0fc8e344839f0db6c1f75bb1e1391e02aaa243c1f3be33c"
+}
