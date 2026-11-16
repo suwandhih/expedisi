@@ -27,6 +27,12 @@ Modul bersama `raja-kirim/penawaran.js` membuat dan memvalidasi payload versi 1 
 
 Payload rusak diabaikan dan dihapus dengan pesan berbahasa Indonesia. Jika penyimpanan gagal/penuh, kalkulator menampilkan pesan dan tidak berpindah halaman. Bila penghapusan diblokir, data tidak dianggap telah dihapus dan pesan kegagalan ditampilkan. Penggantian hanya berlaku pada quotation dan tetap melalui sanitizer teks; template dan nilai tanda terima, kontak pelanggan, serta riwayat korespondensi tidak diubah. Pemeriksaan non-browser `scripts/penawaran-tests.cjs` mencakup payload, penyerahan/penyimpanan/reset, penggantian beberapa pelanggan, hash tab, dan sanitizer.
 
+## Shared Bright Cargo styles
+
+All five pages load the generated [design tokens](src/styles/design-tokens.css), then the editable [brand foundation](src/styles/brand.css), before their own stylesheets. The static build allowlists 18 public files, including both shared stylesheets under `dist/src/styles/`. Do not edit the generated tokens or introduce a framework for this static site.
+
+Use the shared `bc-` classes for skip links, headers/navigation, buttons, cards, badges, alerts, labels/selects and radio tiles; page CSS owns page-specific layout. Colours, fonts and corner radii come from the design tokens. Radio tiles use a label containing a visually hidden radio input immediately followed by a span, retaining native keyboard interaction. Nunito and Montserrat are loaded from Google Fonts; the token font stacks provide offline fallbacks. This foundation step does not change page layouts or behaviour.
+
 ## Menjalankan
 
 Sajikan direktori ini dengan server HTTP statis dan buka alamat server tersebut. Misalnya `npx serve .` jika tersedia. Jangan membuka `index.html` langsung melalui `file://`, karena pemuatan `data.json` memerlukan HTTP. Semua path aplikasi bersifat relatif sehingga dapat dilayani dari subpath GitHub Pages tanpa konfigurasi build. Tidak perlu akun atau API key.

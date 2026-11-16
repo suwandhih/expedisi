@@ -1,0 +1,402 @@
+/* Shared Bright Cargo primitives. Generated design-tokens.css must load first.
+   Use bc- classes for shared UI; keep page-specific layout in each page stylesheet. */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: var(--font-sans);
+  color: var(--brand-foreground);
+  background: var(--brand-background);
+}
+
+:where(h1, h2, h3, h4, h5, h6) {
+  font-family: var(--font-display);
+}
+
+:focus-visible {
+  outline: 3px solid var(--brand-primary);
+  outline-offset: 4px;
+}
+
+.bc-skip {
+  position: fixed;
+  inset-block-start: 12px;
+  inset-inline-start: 12px;
+  z-index: 100;
+  max-width: calc(100% - 24px);
+  padding: 12px 20px;
+  border-radius: var(--radius-full);
+  background: var(--brand-primary);
+  color: var(--brand-primary-foreground);
+  font-weight: 700;
+  text-decoration: none;
+  transform: translateY(calc(-100% - 24px));
+}
+
+.bc-skip:focus {
+  transform: none;
+}
+
+.bc-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 24px;
+  border-block-end: 1px solid var(--brand-border);
+  background: var(--brand-white);
+  color: var(--brand-foreground);
+}
+
+.bc-nav {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.bc-nav a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 16px;
+  border-radius: var(--radius-full);
+  color: var(--brand-muted-foreground);
+  font-weight: 700;
+  line-height: 1.4;
+  text-decoration: none;
+  transition: background-color 160ms ease, color 160ms ease;
+}
+
+.bc-nav a:hover {
+  background: var(--brand-muted);
+  color: var(--brand-foreground);
+}
+
+.bc-nav a[aria-current="page"],
+.bc-nav a.active {
+  background: var(--brand-secondary);
+  color: var(--brand-secondary-foreground);
+}
+
+.bc-btn {
+  --bc-button-bg: var(--brand-card);
+  --bc-button-fg: var(--brand-foreground);
+  --bc-button-border: var(--brand-border);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 44px;
+  max-width: 100%;
+  padding: 10px 20px;
+  border: 1px solid var(--bc-button-border);
+  border-radius: var(--radius-full);
+  background: var(--bc-button-bg);
+  color: var(--bc-button-fg);
+  font: inherit;
+  font-weight: 700;
+  line-height: 1.4;
+  text-align: center;
+  text-decoration: none;
+  overflow-wrap: anywhere;
+  cursor: pointer;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.bc-btn--primary {
+  --bc-button-bg: var(--brand-primary);
+  --bc-button-fg: var(--brand-primary-foreground);
+  --bc-button-border: var(--brand-primary);
+}
+
+.bc-btn--outline {
+  --bc-button-bg: transparent;
+  --bc-button-fg: var(--brand-primary);
+  --bc-button-border: var(--brand-primary);
+}
+
+.bc-btn--ghost {
+  --bc-button-bg: transparent;
+  --bc-button-fg: var(--brand-muted-foreground);
+  --bc-button-border: transparent;
+}
+
+.bc-btn--accent {
+  /* Deepen the orange token so white normal-sized text meets WCAG AA. */
+  --bc-button-bg: color-mix(in srgb, var(--brand-accent-2) 85%, var(--brand-foreground));
+  --bc-button-fg: var(--brand-white);
+  --bc-button-border: var(--bc-button-bg);
+}
+
+.bc-btn:hover {
+  background: color-mix(in srgb, var(--bc-button-bg) 90%, var(--bc-button-fg));
+  text-decoration: none;
+  box-shadow: 0 6px 18px -8px color-mix(in srgb, var(--brand-primary) 24%, transparent);
+}
+
+.bc-btn:active {
+  background: color-mix(in srgb, var(--bc-button-bg) 84%, var(--bc-button-fg));
+  box-shadow: none;
+}
+
+.bc-btn--outline:hover,
+.bc-btn--ghost:hover,
+.bc-btn--outline:active,
+.bc-btn--ghost:active {
+  background: color-mix(in srgb, var(--brand-secondary) 90%, var(--brand-card));
+}
+
+.bc-btn--primary:hover,
+.bc-btn--accent:hover {
+  background: color-mix(in srgb, var(--bc-button-bg) 92%, var(--brand-foreground));
+}
+
+.bc-btn--primary:active,
+.bc-btn--accent:active {
+  background: color-mix(in srgb, var(--bc-button-bg) 84%, var(--brand-foreground));
+}
+
+.bc-btn--lg {
+  min-height: 52px;
+  padding: 14px 28px;
+  font-size: 1.0625rem;
+}
+
+.bc-btn--sm {
+  min-height: 44px;
+  padding: 8px 14px;
+  font-size: 0.875rem;
+}
+
+.bc-btn--pill {
+  border-radius: var(--radius-full);
+}
+
+.bc-btn:disabled,
+.bc-btn[aria-disabled="true"] {
+  background: var(--brand-muted);
+  color: var(--brand-muted-foreground);
+  border-color: var(--brand-border);
+  box-shadow: none;
+  cursor: not-allowed;
+}
+
+.bc-card {
+  min-width: 0;
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-lg);
+  background: var(--brand-card);
+  color: var(--brand-foreground);
+  box-shadow: 0 8px 24px -12px color-mix(in srgb, var(--brand-primary) 12%, transparent);
+}
+
+.bc-card--raised {
+  box-shadow: 0 24px 48px -20px color-mix(in srgb, var(--brand-primary) 24%, transparent),
+    0 4px 14px color-mix(in srgb, var(--brand-primary) 8%, transparent);
+}
+
+.bc-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  padding: 4px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  background: var(--brand-muted);
+  color: var(--brand-muted-foreground);
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.5;
+}
+
+.bc-badge--primary {
+  background: var(--brand-primary);
+  color: var(--brand-primary-foreground);
+}
+
+.bc-badge--secondary {
+  background: var(--brand-secondary);
+  color: var(--brand-secondary-foreground);
+}
+
+.bc-badge--accent {
+  background: var(--brand-accent);
+  color: var(--brand-accent-foreground);
+}
+
+.bc-badge--muted {
+  background: var(--brand-muted);
+  color: var(--brand-muted-foreground);
+}
+
+.bc-badge--outline {
+  border-color: var(--brand-border);
+  background: transparent;
+  color: var(--brand-foreground);
+}
+
+.bc-alert {
+  padding: 16px 20px;
+  border: 1px solid var(--brand-border);
+  border-inline-start: 4px solid var(--brand-primary);
+  border-radius: var(--radius-md);
+  background: var(--brand-secondary);
+  color: var(--brand-secondary-foreground);
+  line-height: 1.6;
+}
+
+.bc-label,
+.bc-eyebrow {
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 700;
+  line-height: 1.5;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.bc-label {
+  margin-block-end: 8px;
+  color: var(--brand-muted-foreground);
+}
+
+.bc-eyebrow {
+  color: var(--brand-primary);
+}
+
+.bc-select {
+  width: 100%;
+  min-width: 0;
+  min-height: 48px;
+  padding: 12px 16px;
+  border: 1px solid var(--brand-border);
+  border-radius: var(--radius-sm);
+  background: var(--brand-background);
+  color: var(--brand-foreground);
+  font: inherit;
+  cursor: pointer;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.bc-select:focus-visible {
+  border-color: var(--brand-primary);
+  outline: 2px solid var(--brand-primary);
+  outline-offset: 2px;
+  box-shadow: 0 0 0 5px color-mix(in srgb, var(--brand-primary) 12%, transparent);
+}
+
+.bc-select:disabled {
+  border-color: var(--brand-border);
+  background: var(--brand-muted);
+  color: var(--brand-muted-foreground);
+  opacity: 1;
+  cursor: not-allowed;
+}
+
+.bc-tiles {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+  min-width: 0;
+}
+
+.bc-tile {
+  position: relative;
+  display: block;
+  min-width: 0;
+  cursor: pointer;
+}
+
+.bc-visually-hidden,
+.bc-tile > input[type="radio"] {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+.bc-tile > span {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  height: 100%;
+  min-height: 96px;
+  padding: 20px;
+  border: 2px solid var(--brand-border);
+  border-radius: var(--radius-md);
+  background: var(--brand-card);
+  color: var(--brand-foreground);
+  line-height: 1.5;
+  transition: background-color 160ms ease, border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.bc-tile:hover > span {
+  border-color: color-mix(in srgb, var(--brand-primary) 60%, var(--brand-border));
+  background: color-mix(in srgb, var(--brand-secondary) 50%, var(--brand-card));
+}
+
+.bc-tile > input[type="radio"]:checked + span {
+  border-color: var(--brand-primary);
+  background: var(--brand-secondary);
+  color: var(--brand-secondary-foreground);
+}
+
+.bc-tile > input[type="radio"]:focus-visible + span {
+  outline: 3px solid var(--brand-primary);
+  outline-offset: 4px;
+}
+
+.bc-tile > input[type="radio"]:disabled + span {
+  border-color: var(--brand-border);
+  background: var(--brand-muted);
+  color: var(--brand-muted-foreground);
+  cursor: not-allowed;
+}
+
+.bc-muted {
+  color: var(--brand-muted-foreground);
+}
+
+.bc-num {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 640px) {
+  .bc-header {
+    gap: 12px;
+    padding: 12px 16px;
+  }
+
+  .bc-nav {
+    width: 100%;
+  }
+
+  .bc-tiles {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bc-nav a,
+  .bc-btn,
+  .bc-select,
+  .bc-tile > span {
+    transition: none;
+  }
+}

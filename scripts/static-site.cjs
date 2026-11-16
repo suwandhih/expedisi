@@ -12,6 +12,8 @@ const root = path.resolve(__dirname, '..');
 const output = path.join(root, 'dist');
 const files = [
   'index.html',
+  'src/styles/design-tokens.css',
+  'src/styles/brand.css',
   'lintas-samudra/index.html',
   'lintas-samudra/styles.css',
   'lintas-samudra/app.js',
@@ -49,6 +51,11 @@ function check() {
     if (file.endsWith('.html')) {
       assert.match(source, /<!doctype html>/i, `${file}: doctype HTML tidak tersedia`);
       assert.match(source, /<html\b[^>]*lang="id"/i, `${file}: bahasa halaman harus dipertahankan`);
+      const localStyles = [...source.matchAll(/<link\b[^>]*rel="stylesheet"[^>]*href="([^"]+)"[^>]*>/g)]
+        .map((match) => localTarget(file, match[1]))
+        .filter(Boolean)
+        .map((target) => target.file);
+      assert.deepEqual(localStyles.slice(0, 2), ['src/styles/design-tokens.css', 'src/styles/brand.css'], `${file}: token dan brand harus dimuat sebelum CSS halaman`);
       const ids = [...source.matchAll(/\bid="([^"]+)"/g)].map((match) => match[1]);
       assert.equal(new Set(ids).size, ids.length, `${file}: ID HTML duplikat`);
       for (const match of source.matchAll(/\b(?:src|href)="([^"]+)"/g)) {
@@ -73,6 +80,13 @@ function check() {
       for (const match of source.matchAll(/url\(\s*['"]?([^'"\s)]+)['"]?\s*\)/g)) localTarget(file, match[1]);
     }
   }
+  const brand = sources.get('src/styles/brand.css');
+  assert(!/#[\da-f]{3,8}\b|\brgba?\s*\(/i.test(brand), 'CSS brand harus memakai token warna, bukan hex/rgb');
+  for (const primitive of ['skip', 'header', 'nav', 'btn', 'card', 'badge', 'alert', 'label', 'select', 'tiles', 'tile', 'eyebrow', 'muted', 'num', 'visually-hidden']) {
+    assert(brand.includes(`.bc-${primitive}`), `CSS brand: primitif bc-${primitive} tidak tersedia`);
+  }
+  assert(brand.includes(':checked + span') && brand.includes(':focus-visible + span'), 'Tile radio harus memiliki status pilihan dan fokus keyboard');
+  assert(brand.includes('prefers-reduced-motion: reduce'), 'Transisi brand harus menghormati reduced motion');
   const home = sources.get('index.html');
   const lintas = sources.get('lintas-samudra/index.html');
   const raja = sources.get('raja-kirim/index.html');
