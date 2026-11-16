@@ -1,10 +1,10 @@
-# Lintas Samudra — demo ekspedisi
+# Expedisi — Raja Kirim & Lintas Samudra
 
 Frontend statis berbahasa Indonesia untuk demonstrasi. Identitas, tarif, vendor, booking, status, posisi, dokumen, POD, klaim, dan tagihan adalah **simulasi**, bukan layanan atau tracking real-time. Tidak ada backend, transaksi, pembayaran, upload, atau pengiriman klaim. Pilihan tema dapat disimpan di browser; data klaim hanya tampil sementara dan tidak disimpan.
 
 ## Demo Raja Kirim
 
-Demo baru tersedia di [`raja-kirim/index.html`](raja-kirim/index.html); demo Lintas Samudra yang lama tetap tersedia di `index.html`. Raja Kirim memfokuskan perbandingan alternatif harga ekspor/impor serta simulasi surat dan dokumen pelanggan. Pengelolaan pelanggan menyimpan kontak dan riwayat korespondensi simulasi di penyimpanan browser lokal, yang dapat dihapus melalui pengaturan browser. Template dapat diedit dan dipratinjau per pelanggan; perubahan template hanya berlaku selama halaman terbuka. Email dan WhatsApp hanya berupa contoh tampilan: tidak ada koneksi atau pesan yang dikirim. Seluruh data dan tarif adalah fiktif, bukan penawaran aktual. Jangan masukkan data sensitif.
+Halaman utama (`/`) menyediakan dua pilihan: [Raja Kirim](raja-kirim/index.html) di `/raja-kirim/` dan [Lintas Samudra](lintas-samudra/index.html) di `/lintas-samudra/`. Keduanya memiliki halaman tersendiri, dengan navigasi untuk berpindah atau kembali ke pilihan halaman. Fitur asli dipertahankan tanpa menduplikasi implementasi. Raja Kirim memfokuskan perbandingan alternatif harga ekspor/impor serta simulasi surat dan dokumen pelanggan. Pengelolaan pelanggan menyimpan kontak dan riwayat korespondensi simulasi di penyimpanan browser lokal, yang dapat dihapus melalui pengaturan browser. Template dapat diedit dan dipratinjau per pelanggan; perubahan template hanya berlaku selama halaman terbuka. Email dan WhatsApp hanya berupa contoh tampilan: tidak ada koneksi atau pesan yang dikirim. Seluruh data dan tarif adalah fiktif, bukan penawaran aktual. Jangan masukkan data sensitif.
 
 ## Menjalankan
 
@@ -17,11 +17,11 @@ Profil `node-24` digunakan hanya untuk alat pemeriksaan dan server HTTP statis `
 - Periksa sintaks JavaScript, tautan/aset lokal, dan konsistensi data contoh: `node scripts/static-site.cjs check`.
 - Siapkan berkas publik: `node scripts/static-site.cjs build`.
 - Skrip `dev` di `package.json` menjalankan server pada folder `dist/` menggunakan `PORT` yang diberikan platform; `.cdf/runtime.json` memilih profil tooling. Hanya berkas situs yang disajikan; dokumen internal dan konfigurasi proyek tidak ikut disalin.
-- Buka Preview untuk Lintas Samudra (`/`), atau tambahkan `/raja-kirim/` untuk demo Raja Kirim dan `/raja-kirim/surat.html` untuk surat dan pelanggan.
+- Buka Preview (`/`) lalu pilih Raja Kirim atau Lintas Samudra. Alamat langsung: `/raja-kirim/` dan `/lintas-samudra/`. Surat dan pelanggan tetap tersedia di `/raja-kirim/surat.html`.
 - Setelah mengubah sumber statis, build ulang lalu restart Preview. Situs ini tidak menggunakan HMR.
 - Untuk memeriksa respons halaman/aset dan penolakan akses berkas internal tanpa browser: `node scripts/static-site.cjs http <alamat-preview>`.
 
-Data contoh pengiriman dan checkpoint tersedia di `data.json`; tarif contoh dihitung di `app.js`. Jangan masukkan data sensitif: GitHub Pages bersifat publik. Integrasi nyata, akses dokumen, retensi, kepatuhan, dan tanda tangan membutuhkan desain terpisah.
+Data contoh pengiriman dan checkpoint tersedia di `lintas-samudra/data.json`; tarif contoh dihitung di `lintas-samudra/app.js`. Jangan masukkan data sensitif: GitHub Pages bersifat publik. Integrasi nyata, akses dokumen, retensi, kepatuhan, dan tanda tangan membutuhkan desain terpisah.
 
 ## Peta dan jaringan
 

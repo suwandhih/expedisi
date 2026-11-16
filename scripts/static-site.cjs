@@ -2,7 +2,7 @@
 
 // Build/check tooling only. The application remains plain browser JavaScript.
 const assert = require('node:assert/strict');
-const { copyFileSync, mkdirSync, readFileSync } = require('node:fs');
+const { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync } = require('node:fs');
 const path = require('node:path');
 const { Script } = require('node:vm');
 
@@ -10,9 +10,10 @@ const root = path.resolve(__dirname, '..');
 const output = path.join(root, 'dist');
 const files = [
   'index.html',
-  'styles.css',
-  'app.js',
-  'data.json',
+  'lintas-samudra/index.html',
+  'lintas-samudra/styles.css',
+  'lintas-samudra/app.js',
+  'lintas-samudra/data.json',
   'raja-kirim/index.html',
   'raja-kirim/harga.css',
   'raja-kirim/harga.js',
@@ -62,7 +63,17 @@ function check() {
       for (const match of source.matchAll(/url\(\s*['"]?([^'"\s)]+)['"]?\s*\)/g)) localTarget(file, match[1]);
     }
   }
-  const data = JSON.parse(sources.get('data.json'));
+  const home = sources.get('index.html');
+  const lintas = sources.get('lintas-samudra/index.html');
+  const raja = sources.get('raja-kirim/index.html');
+  assert.match(home, /href="raja-kirim\/index\.html"/, 'Pilihan halaman Raja Kirim tidak tersedia');
+  assert.match(home, /href="lintas-samudra\/index\.html"/, 'Pilihan halaman Lintas Samudra tidak tersedia');
+  assert.match(lintas, /href="\.\.\/raja-kirim\/index\.html"/, 'Navigasi ke Raja Kirim tidak tersedia');
+  assert.match(raja, /href="\.\.\/lintas-samudra\/index\.html"/, 'Navigasi ke Lintas Samudra tidak tersedia');
+  for (const file of ['lintas-samudra/index.html', 'raja-kirim/index.html', 'raja-kirim/surat.html']) {
+    assert.match(sources.get(file), /href="\.\.\/index\.html"/, `${file}: navigasi ke pilihan halaman tidak tersedia`);
+  }
+  const data = JSON.parse(sources.get('lintas-samudra/data.json'));
   assert(Array.isArray(data.shipments) && data.shipments.length > 0, 'Data pengiriman contoh tidak tersedia');
   const shipmentIds = new Set();
   for (const shipment of data.shipments) {
@@ -88,12 +99,27 @@ function check() {
       for (const field of ['recipient', 'time', 'proof']) assert.equal(typeof shipment.pod[field], 'string');
     }
   }
-  assert.match(sources.get('app.js'), /fetch\('data\.json(?:\?[^']*)?'\)/, 'Lokasi pemuatan data contoh berubah');
-  console.log(`OK: 3 halaman HTML, 3 skrip JavaScript, ${references} referensi lokal, ${data.shipments.length} pengiriman contoh.`);
+  assert.match(sources.get('lintas-samudra/app.js'), /fetch\('data\.json(?:\?[^']*)?'\)/, 'Lokasi pemuatan data contoh berubah');
+  const pageCount = files.filter((file) => file.endsWith('.html')).length;
+  const scriptCount = files.filter((file) => file.endsWith('.js')).length;
+  console.log(`OK: ${pageCount} halaman HTML, ${scriptCount} skrip JavaScript, ${references} referensi lokal, ${data.shipments.length} pengiriman contoh; navigasi dua halaman tersedia.`);
+}
+
+function removeStaleOutput(directory) {
+  if (!existsSync(directory)) return;
+  for (const entry of readdirSync(directory, { withFileTypes: true })) {
+    const target = path.join(directory, entry.name);
+    if (entry.isDirectory()) removeStaleOutput(target);
+    else {
+      const relative = path.relative(output, target).split(path.sep).join('/');
+      if (entry.isSymbolicLink() || !files.includes(relative)) unlinkSync(target);
+    }
+  }
 }
 
 function build() {
   check();
+  removeStaleOutput(output);
   for (const file of files) {
     const target = path.join(output, file);
     mkdirSync(path.dirname(target), { recursive: true });

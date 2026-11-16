@@ -12,14 +12,14 @@ This file is the primary instruction document the AI agent reads on every turn. 
 
 ## Stack
 - Situs statis HTML, CSS, dan JavaScript browser; tidak ada backend, bundler, package.json, atau lock dependensi aplikasi pada impor asli.
-- Satu situs dengan demo Lintas Samudra di `/` dan Raja Kirim di `/raja-kirim/`; jangan pisahkan menjadi layanan atau ubah framework.
+- Satu situs dengan pilihan halaman di `/`, Lintas Samudra di `/lintas-samudra/`, dan Raja Kirim di `/raja-kirim/`; jangan pisahkan menjadi layanan atau ubah framework. HTML, CSS, skrip, dan data khusus Lintas Samudra berada dalam `lintas-samudra/`.
 - Profil Foundry `node-24` hanya untuk tooling. Manifest npm menambahkan `serve@14.2.8` sebagai devDependency server statis; tidak menambahkan backend. Pertahankan `package-lock.json` hasil instalasi dan gunakan `npm ci` setelah lock tersedia.
 
 ## Conventions
 - Konfigurasi runtime ada di `.cdf/runtime.json`; lifecycle standar npm (`dev`, `check`, `build`) ada di `package.json`. `PORT` disediakan platform; jangan tentukan port tetap.
 - Pemeriksaan: `node scripts/static-site.cjs check`. Build statis: `node scripts/static-site.cjs build`.
 - Pemeriksaan HTTP (tanpa browser): `node scripts/static-site.cjs http <alamat-preview>` setelah build dan Preview aktif.
-- Build menyalin hanya 10 berkas publik ke `dist/`. Sajikan `dist/`, jangan seluruh repository; `serve.json` menonaktifkan directory listing. Gunakan resolusi indeks bawaan server agar `/` dan `/raja-kirim/` berfungsi; tautan `.html` tetap didukung melalui pengalihan URL bawaan.
+- Build menyalin hanya 11 berkas publik ke `dist/`. Sajikan `dist/`, jangan seluruh repository; `serve.json` menonaktifkan directory listing. Gunakan resolusi indeks bawaan server agar `/`, `/lintas-samudra/`, dan `/raja-kirim/` berfungsi; tautan `.html` tetap didukung melalui pengalihan URL bawaan. Tambahkan berkas publik baru ke allowlist `scripts/static-site.cjs`.
 - Tidak perlu akun atau API key. Peta dan font memerlukan internet (unpkg, OpenFreeMap, Google Fonts). Seluruh alur bisnis tetap simulasi; data pelanggan tetap di localStorage browser.
 - Perubahan sumber statis perlu build ulang dan restart Preview karena tidak ada HMR. Jangan jalankan server melalui shell; gunakan kontrol Preview Foundry.
 
