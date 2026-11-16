@@ -1,69 +1,91 @@
-/* Tambahan untuk Kalkulator negara; identitas bersama berasal dari harga.css. */
-[hidden]{display:none!important}
-.calculator-page .header-inner{gap:28px}
-.calculator-page .header nav{gap:22px}
-.calculator-intro{min-height:0;align-items:center;padding:40px 0}
-.calculator-intro h1{font-size:clamp(38px,4.8vw,62px);letter-spacing:-2.8px}
-.calculator-intro p{max-width:530px}
-.formula-card{background:#14213b;color:#fff;padding:26px;flex:0 0 35%;border-radius:4px}
-.formula-card .eyebrow{color:#d9ef86;display:block;margin-bottom:15px}
-.formula-card strong{font-size:17px;display:block}
-.formula-card p{font-size:13px;color:#ced8eb;line-height:1.9;margin:14px 0}
-.formula-card small{display:block;color:#acb9d0;font-size:11px}
-.country-field{border:0;padding:0;margin:0 0 22px;min-width:0}
-.country-field legend{font-size:10px;font-weight:800;letter-spacing:.8px;color:#6b778a;margin-bottom:10px}
-.country-options{display:flex;flex-wrap:wrap;gap:9px}
-.country-options label{display:flex;align-items:center;gap:8px;padding:9px 12px;border:1px solid #dce2eb;border-radius:4px;cursor:pointer;font-size:13px}
-.country-options label:has(input:checked){background:#f0f3fe;border-color:#3159dc}
-.country-options input{accent-color:#3159dc;width:16px;height:16px;margin:0}
-.calculator-fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px}
-.calculator-fields label{display:flex;flex-direction:column;gap:7px;min-width:0;font-size:10px;letter-spacing:.7px;font-weight:800;color:#667388}
-.calculator-fields input,.calculator-fields select,.rate-table input{width:100%;min-width:0;border:1px solid #dce2eb;border-radius:4px;padding:11px;color:#14213b;background:#fff;font:400 14px/1.5 system-ui,sans-serif;letter-spacing:normal}
-.calculator-fields .description-field{grid-column:span 2}
-.calculator-page input:focus-visible,.calculator-page select:focus-visible,.calculator-page summary:focus-visible,.calculator-page button:focus-visible,.table-scroll:focus-visible{outline:2px solid #3159dc;outline-offset:3px}
-.calculator-page [aria-invalid="true"]{border-color:#b32331}
-.field-error{color:#a31d2a;font-size:12px;line-height:1.5;font-weight:500;letter-spacing:normal;margin:5px 0 0}
-.field-error:empty{display:none}
-.hint{font-size:12px;line-height:1.7;color:#59677c}
-#mode-hint{margin:16px 0}
-#form-status{margin-top:12px}
-.settings-panel{margin-top:18px;padding:24px 30px}
-.settings-panel>summary{cursor:pointer;color:#14213b;font-weight:750;font-size:16px}
-.settings-panel>summary .hint{display:block;margin:5px 0 0 18px;font-weight:400}
-.settings-panel>p{margin:18px 0}
-.global-fields{grid-template-columns:repeat(3,minmax(0,1fr));margin:22px 0}
-.settings-context{font-size:13px;color:#52627c;font-weight:600}
-.table-scroll{overflow-x:auto;margin:12px 0 22px}
-.rate-table{border-collapse:collapse;width:100%;min-width:790px;font-size:12px;text-align:left}
-.rate-table caption{text-align:left;font-weight:700;font-size:13px;margin:0 0 12px;color:#14213b}
-.rate-table th,.rate-table td{padding:12px 8px;vertical-align:top;border-bottom:1px solid #e4e8ef}
-.rate-table thead th{background:#f3f5fa;color:#53627c;font-size:10px;letter-spacing:.5px}
-.rate-table th[scope="row"]{min-width:125px;font-size:12px;padding-top:22px}
-.rate-table input{min-width:105px;padding:8px;font-size:13px}
-.rate-table td .hint{display:block;max-width:120px;font-size:11px}
-.settings-actions{display:flex;flex-wrap:wrap;gap:10px}
-.secondary{background:#f0f3fa;color:#284aaf;border:1px solid #d5ddef}
-.secondary:hover{background:#e2e9fa}
-#settings-status[data-state="error"]{color:#a31d2a}
-#results-status{font-size:13px;color:#52627c}
-.calculator-page .offers{grid-template-columns:repeat(3,minmax(0,1fr))}
-.calculator-page .offer{min-width:0}
-.calculator-page .offer-heading{align-items:flex-start;flex-wrap:wrap}
-.calculator-page .offer-heading h3{font-size:17px}
-.calculator-page .offer-heading p{color:#59677c}
-.calculator-page .offer-data{display:block;margin:22px 0 14px}
-.calculator-page .offer-data span{color:#667388}
-.calculator-page .offer-data .price{font-size:26px;overflow-wrap:anywhere;font-variant-numeric:tabular-nums}
-.idr-estimate{margin:3px 0 12px;font-size:13px;color:#52627c;overflow-wrap:anywhere}
-.cost-difference{font-size:12px;color:#53627c;margin:0 0 18px;overflow-wrap:anywhere}
-.calculator-page .offer details{font-size:12px;color:#53627c}
-.offer-actions{display:flex;margin-top:20px}
-.offer-actions .button{width:100%;white-space:normal}
-.cost-breakdown{margin:12px 0 0}
-.cost-breakdown>div{gap:12px;padding-top:9px}
-.cost-breakdown dt{flex:1}
-.cost-breakdown dd{margin:0;text-align:right;font-variant-numeric:tabular-nums;overflow-wrap:anywhere;min-width:0;max-width:62%}
-.calculation-note{font-size:11px;color:#59677c;line-height:1.7;margin-bottom:0;overflow-wrap:anywhere}
-@media(max-width:1050px){.calculator-page .header-inner{flex-wrap:wrap;padding-top:14px}.calculator-page .header nav{order:3;min-height:44px;width:100%;overflow-x:auto}.calculator-page .header nav a{white-space:nowrap;flex-shrink:0}.calculator-fields{grid-template-columns:repeat(2,minmax(0,1fr))}.calculator-page .offers{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media(max-width:650px){.calculator-intro{flex-direction:column;gap:24px;align-items:stretch}.formula-card{flex-basis:auto}.calculator-intro h1{font-size:44px;letter-spacing:-2px}.calculator-page .offers{grid-template-columns:1fr}.global-fields{grid-template-columns:1fr}.settings-panel{padding:22px}.section-top{flex-wrap:wrap}}
-@media(max-width:420px){.calculator-fields{grid-template-columns:1fr}.calculator-fields .description-field{grid-column:auto}.calculator-page .button{white-space:normal}.country-options{display:grid;grid-template-columns:1fr 1fr}.country-options label{padding:8px;font-size:12px}}
+/* Kalkulator negara layouts; shared appearance comes from brand.css and harga.css. */
+[hidden] { display: none !important; }
+.calculator-page .header-inner { gap: 28px; }
+.calculator-page .header nav { gap: 22px; }
+.calculator-intro { min-height: 0; align-items: center; padding: 40px 0; }
+.calculator-intro h1 { font-size: clamp(38px, 4.8vw, 62px); letter-spacing: -2.8px; }
+.calculator-intro p { max-width: 530px; }
+.formula-card { background: var(--brand-foreground); color: var(--brand-white); padding: 26px; flex: 0 0 35%; }
+.formula-card .eyebrow { color: var(--brand-accent); display: block; margin-bottom: 15px; }
+.formula-card strong { font-family: var(--font-display); font-size: 17px; display: block; }
+.formula-card p { font-size: 13px; color: var(--brand-white); line-height: 1.9; margin: 14px 0; }
+.formula-card small { display: block; color: color-mix(in srgb, var(--brand-white) 80%, var(--brand-foreground)); font-size: 11px; }
+.country-field { border: 0; padding: 0; margin: 0 0 22px; min-width: 0; }
+.country-field legend { font-size: 10px; font-weight: 800; letter-spacing: .8px; color: var(--brand-muted-foreground); margin-bottom: 10px; }
+.country-options { display: flex; flex-wrap: wrap; gap: 9px; }
+.country-options label { display: flex; align-items: center; gap: 8px; min-width: 0; min-height: 44px; padding: 9px 12px; border: 1px solid var(--brand-border); border-radius: var(--radius-full); background: var(--brand-card); cursor: pointer; font-size: 13px; }
+.country-options label:has(input:checked) { background: var(--brand-secondary); border-color: var(--brand-primary); color: var(--brand-secondary-foreground); }
+.country-options input { accent-color: var(--brand-primary); width: 16px; height: 16px; margin: 0; flex-shrink: 0; }
+.calculator-fields { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 16px; }
+.calculator-fields label { display: flex; flex-direction: column; gap: 7px; min-width: 0; font-size: 10px; letter-spacing: .7px; font-weight: 800; color: var(--brand-muted-foreground); }
+.calculator-fields input, .calculator-fields select, .rate-table input { padding: 11px; font: 400 14px/1.5 var(--font-sans); letter-spacing: normal; }
+.calculator-fields input, .rate-table input { cursor: text; }
+.calculator-fields input::placeholder { color: var(--brand-muted-foreground); opacity: 1; }
+.calculator-fields .description-field { grid-column: span 2; }
+.calculator-page input:focus-visible, .calculator-page select:focus-visible, .calculator-page summary:focus-visible, .calculator-page button:focus-visible, .table-scroll:focus-visible { outline: 2px solid var(--brand-primary); outline-offset: 3px; }
+.calculator-page [aria-invalid="true"] { border-color: var(--brand-destructive); }
+.country-field[aria-invalid="true"] .country-options label { border-color: var(--brand-destructive); }
+.field-error { color: var(--brand-destructive); font-size: 12px; line-height: 1.5; font-weight: 500; letter-spacing: normal; margin: 5px 0 0; overflow-wrap: anywhere; }
+.field-error:empty { display: none; }
+.hint { font-size: 12px; line-height: 1.7; color: var(--brand-muted-foreground); }
+#mode-hint { margin: 16px 0; }
+#form-status { margin-top: 12px; }
+.settings-panel { margin-top: 18px; padding: 24px 30px; }
+.settings-panel > summary { cursor: pointer; color: var(--brand-foreground); font-weight: 750; font-size: 16px; }
+.settings-panel > summary .hint { display: block; margin: 5px 0 0 18px; font-weight: 400; }
+.settings-panel > p { margin: 18px 0; }
+.global-fields { grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 22px 0; }
+.settings-context { font-size: 13px; color: var(--brand-muted-foreground); font-weight: 600; }
+.table-scroll { overflow-x: auto; margin: 12px 0 22px; border-radius: var(--radius-sm); }
+.rate-table { border-collapse: collapse; width: 100%; min-width: 790px; font-size: 12px; text-align: left; }
+.rate-table caption { text-align: left; font-weight: 700; font-size: 13px; margin: 0 0 12px; color: var(--brand-foreground); }
+.rate-table th, .rate-table td { padding: 12px 8px; vertical-align: top; border-bottom: 1px solid var(--brand-border); }
+.rate-table thead th { background: var(--brand-muted); color: var(--brand-muted-foreground); font-size: 10px; letter-spacing: .5px; }
+.rate-table th[scope="row"] { min-width: 125px; font-size: 12px; padding-top: 22px; }
+.rate-table input { min-width: 105px; min-height: 44px; padding: 8px; font-size: 13px; }
+.rate-table td .hint { display: block; max-width: 120px; font-size: 11px; }
+.settings-actions { display: flex; flex-wrap: wrap; gap: 10px; }
+#settings-status[data-state="error"] { color: var(--brand-destructive); }
+#results-status { font-size: 13px; color: var(--brand-muted-foreground); }
+.calculator-page .offers { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+.calculator-page .offer { min-width: 0; }
+.calculator-page .offer-heading { align-items: flex-start; flex-wrap: wrap; }
+.calculator-page .offer-heading h3 { font-size: 17px; }
+.calculator-page .offer-heading p { color: var(--brand-muted-foreground); }
+.calculator-page .offer-data { display: block; margin: 22px 0 14px; }
+.calculator-page .offer-data span { color: var(--brand-muted-foreground); }
+.calculator-page .offer-data .price { font-size: 26px; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
+.idr-estimate { margin: 3px 0 12px; font-size: 13px; color: var(--brand-muted-foreground); overflow-wrap: anywhere; }
+.cost-difference { font-size: 12px; color: var(--brand-muted-foreground); margin: 0 0 18px; overflow-wrap: anywhere; }
+.calculator-page .offer details { font-size: 12px; color: var(--brand-muted-foreground); }
+.offer-actions { display: flex; margin-top: 20px; }
+.offer-actions .button { width: 100%; white-space: normal; }
+.cost-breakdown { margin: 12px 0 0; }
+.cost-breakdown > div { gap: 12px; padding-top: 9px; }
+.cost-breakdown dt { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.cost-breakdown dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; min-width: 0; max-width: 62%; }
+.calculation-note { font-size: 11px; color: var(--brand-muted-foreground); line-height: 1.7; margin-bottom: 0; overflow-wrap: anywhere; }
+
+@media (max-width: 1050px) {
+  .calculator-page .header-inner { flex-wrap: wrap; padding-top: 14px; }
+  .calculator-page .header nav { order: 3; min-height: 44px; width: 100%; overflow-x: auto; }
+  .calculator-page .header nav a { white-space: nowrap; flex-shrink: 0; }
+  .calculator-fields { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .calculator-page .offers { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 650px) {
+  .calculator-intro { flex-direction: column; gap: 24px; align-items: stretch; }
+  .formula-card { flex-basis: auto; }
+  .calculator-intro h1 { font-size: 44px; letter-spacing: -2px; }
+  .calculator-page .offers { grid-template-columns: 1fr; }
+  .global-fields { grid-template-columns: 1fr; }
+  .settings-panel { padding: 22px; }
+  .section-top { flex-wrap: wrap; }
+}
+@media (max-width: 420px) {
+  .calculator-fields { grid-template-columns: 1fr; }
+  .calculator-fields .description-field { grid-column: auto; }
+  .calculator-page .button { white-space: normal; }
+  .country-options { display: grid; grid-template-columns: 1fr 1fr; }
+  .country-options label { padding: 8px; font-size: 12px; }
+}

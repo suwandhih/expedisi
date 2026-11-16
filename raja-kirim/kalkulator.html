@@ -15,58 +15,58 @@
   <script src="kalkulator.js" defer></script>
 </head>
 <body class="calculator-page">
-  <a class="skip" href="#konten">Langsung ke konten</a>
-  <header class="header">
+  <a class="skip bc-skip" href="#konten">Langsung ke konten</a>
+  <header class="header bc-header">
     <div class="header-inner">
       <a href="index.html" class="brand"><span class="brand-icon" aria-hidden="true">↗</span><span>raja<span>kirim</span><small>SIMULASI EKSPEDISI</small></span></a>
-      <nav aria-label="Navigasi utama"><a href="index.html">Perbandingan harga</a><a class="active" aria-current="page" href="kalkulator.html">Kalkulator negara</a><a href="surat.html#pelanggan">Pelanggan</a><a href="surat.html">Surat &amp; dokumen</a></nav>
-      <a class="old-demo" href="../lintas-samudra/index.html">Lintas Samudra ↗</a>
+      <nav class="bc-nav" aria-label="Navigasi utama"><a href="index.html">Perbandingan harga</a><a class="active" aria-current="page" href="kalkulator.html">Kalkulator negara</a><a href="surat.html#pelanggan">Pelanggan</a><a href="surat.html">Surat &amp; dokumen</a></nav>
+      <a class="old-demo bc-btn bc-btn--outline bc-btn--sm" href="../lintas-samudra/index.html">Lintas Samudra ↗</a>
     </div>
   </header>
   <main id="konten" class="shell">
-    <div class="notice"><span aria-hidden="true">ⓘ</span><p><strong>Mode demo.</strong> Semua angka adalah contoh/simulasi, bukan tarif resmi atau penawaran aktual. Tidak ada layanan yang terhubung. Pengaturan hanya disimpan di browser ini; jangan masukkan data sensitif.</p></div>
-    <section class="intro calculator-intro"><div class="intro-copy"><div class="eyebrow"><span class="intro-dot"></span> INDONESIA ↔ DUNIA</div><h1>Satu barang.<br>Bandingkan <span>totalnya.</span></h1><p>Simulasikan total biaya sampai tujuan, bukan hanya ongkos kirim. Bandingkan enam negara dalam satu layar.</p></div><div class="formula-card"><span class="eyebrow">DASAR PERHITUNGAN CONTOH</span><strong>Barang + kirim + asuransi = CIF</strong><p>Bea = CIF × bea%.<br>Pajak = (CIF + bea) × pajak%.<br>Total = CIF + lokal + bea + pajak.</p><small>Rumus disederhanakan; tidak mencakup seluruh pungutan atau ketentuan pabean.</small></div></section>
-    <section class="search-card" aria-labelledby="form-title">
-      <div class="section-top"><div><div class="eyebrow">RENCANA PENGIRIMAN</div><h2 id="form-title">Kalkulator negara</h2><p>Ekspor dari Indonesia atau impor ke Indonesia. Pilih sedikitnya satu negara.</p></div><span class="badge">DATA SIMULASI</span></div>
+    <div class="notice bc-alert"><span aria-hidden="true">ⓘ</span><p><strong>Mode demo.</strong> Semua angka adalah contoh/simulasi, bukan tarif resmi atau penawaran aktual. Tidak ada layanan yang terhubung. Pengaturan hanya disimpan di browser ini; jangan masukkan data sensitif.</p></div>
+    <section class="intro calculator-intro"><div class="intro-copy"><div class="eyebrow"><span class="intro-dot"></span> INDONESIA ↔ DUNIA</div><h1>Satu barang.<br>Bandingkan <span>totalnya.</span></h1><p>Simulasikan total biaya sampai tujuan, bukan hanya ongkos kirim. Bandingkan enam negara dalam satu layar.</p></div><div class="formula-card bc-card bc-card--raised"><span class="eyebrow">DASAR PERHITUNGAN CONTOH</span><strong>Barang + kirim + asuransi = CIF</strong><p>Bea = CIF × bea%.<br>Pajak = (CIF + bea) × pajak%.<br>Total = CIF + lokal + bea + pajak.</p><small>Rumus disederhanakan; tidak mencakup seluruh pungutan atau ketentuan pabean.</small></div></section>
+    <section class="search-card bc-card bc-card--raised" aria-labelledby="form-title">
+      <div class="section-top"><div><div class="eyebrow">RENCANA PENGIRIMAN</div><h2 id="form-title">Kalkulator negara</h2><p>Ekspor dari Indonesia atau impor ke Indonesia. Pilih sedikitnya satu negara.</p></div><span class="badge bc-badge bc-badge--secondary">DATA SIMULASI</span></div>
       <form id="calculator-form" novalidate>
         <fieldset class="direction"><legend>JENIS PENGIRIMAN</legend><label><input type="radio" name="direction" value="ekspor" checked><span>↗ &nbsp; Ekspor <small>Dari Indonesia</small></span></label><label><input type="radio" name="direction" value="impor"><span>↙ &nbsp; Impor <small>Ke Indonesia</small></span></label></fieldset>
         <fieldset class="country-field" aria-describedby="countries-error"><legend id="countries-label">NEGARA TUJUAN</legend><div id="countries" class="country-options"></div><p id="countries-error" class="field-error"></p></fieldset>
         <div class="calculator-fields">
-          <label for="mode">MODA PENGIRIMAN<select id="mode" aria-describedby="mode-error"><option value="LCL">Laut · LCL</option><option value="FCL">Laut · FCL</option><option value="Udara">Udara</option></select><span id="mode-error" class="field-error"></span></label>
-          <label for="goods">NILAI BARANG (USD)<input id="goods" type="number" min="0.01" step="any" value="10000" required aria-describedby="goods-error"><span id="goods-error" class="field-error"></span></label>
-          <label for="weight" id="weight-field">BERAT (KG)<input id="weight" type="number" min="0.01" step="any" value="500" required aria-describedby="weight-error"><span id="weight-error" class="field-error"></span></label>
-          <label for="volume" id="volume-field">VOLUME (M³)<input id="volume" type="number" min="0.001" step="any" value="2" required aria-describedby="volume-error"><span id="volume-error" class="field-error"></span></label>
-          <label for="containers" id="containers-field" hidden>JUMLAH KONTAINER<input id="containers" type="number" min="1" max="50" step="1" value="1" disabled required aria-describedby="containers-error"><span id="containers-error" class="field-error"></span></label>
-          <label for="description" class="description-field">DESKRIPSI BARANG (OPSIONAL)<input id="description" type="text" maxlength="120" placeholder="Contoh: Kopi kemasan" aria-describedby="description-error"><span id="description-error" class="field-error"></span></label>
+          <label for="mode">MODA PENGIRIMAN<select class="bc-select" id="mode" aria-describedby="mode-error"><option value="LCL">Laut · LCL</option><option value="FCL">Laut · FCL</option><option value="Udara">Udara</option></select><span id="mode-error" class="field-error"></span></label>
+          <label for="goods">NILAI BARANG (USD)<input class="bc-select" id="goods" type="number" min="0.01" step="any" value="10000" required aria-describedby="goods-error"><span id="goods-error" class="field-error"></span></label>
+          <label for="weight" id="weight-field">BERAT (KG)<input class="bc-select" id="weight" type="number" min="0.01" step="any" value="500" required aria-describedby="weight-error"><span id="weight-error" class="field-error"></span></label>
+          <label for="volume" id="volume-field">VOLUME (M³)<input class="bc-select" id="volume" type="number" min="0.001" step="any" value="2" required aria-describedby="volume-error"><span id="volume-error" class="field-error"></span></label>
+          <label for="containers" id="containers-field" hidden>JUMLAH KONTAINER<input class="bc-select" id="containers" type="number" min="1" max="50" step="1" value="1" disabled required aria-describedby="containers-error"><span id="containers-error" class="field-error"></span></label>
+          <label for="description" class="description-field">DESKRIPSI BARANG (OPSIONAL)<input class="bc-select" id="description" type="text" maxlength="120" placeholder="Contoh: Kopi kemasan" aria-describedby="description-error"><span id="description-error" class="field-error"></span></label>
         </div>
         <p id="mode-hint" class="hint"></p>
-        <button type="submit" class="button primary">Bandingkan total biaya <span aria-hidden="true">→</span></button>
+        <button type="submit" class="button primary bc-btn bc-btn--primary">Bandingkan total biaya <span aria-hidden="true">→</span></button>
         <p id="form-status" class="field-error" role="status"></p>
       </form>
     </section>
-    <details id="settings-panel" class="search-card settings-panel">
+    <details id="settings-panel" class="search-card settings-panel bc-card">
       <summary><span>Pengaturan angka contoh</span><span class="hint">Ubah tarif, bea, pajak, transit, asuransi, dan kurs</span></summary>
       <p class="hint">Perubahan valid disimpan otomatis di browser ini. Angka kalkulator tidak mengubah Perbandingan harga. Biaya lokal dan bea berlaku untuk semua moda pada arah/negara yang sama.</p>
       <form id="settings-form" novalidate>
         <div class="calculator-fields global-fields">
-          <label for="exchange-rate">KURS USD → IDR<input id="exchange-rate" type="number" min="0.01" step="any" required aria-describedby="exchange-rate-error"><span id="exchange-rate-error" class="field-error"></span></label>
-          <label for="insurance">ASURANSI (%)<input id="insurance" type="number" min="0" max="100" step="any" required aria-describedby="insurance-error"><span id="insurance-error" class="field-error"></span></label>
-          <label for="import-tax" id="import-tax-field" hidden>PAJAK IMPOR INDONESIA (%)<input id="import-tax" type="number" min="0" max="100" step="any" disabled required aria-describedby="import-tax-error"><span id="import-tax-error" class="field-error"></span></label>
+          <label for="exchange-rate">KURS USD → IDR<input class="bc-select" id="exchange-rate" type="number" min="0.01" step="any" required aria-describedby="exchange-rate-error"><span id="exchange-rate-error" class="field-error"></span></label>
+          <label for="insurance">ASURANSI (%)<input class="bc-select" id="insurance" type="number" min="0" max="100" step="any" required aria-describedby="insurance-error"><span id="insurance-error" class="field-error"></span></label>
+          <label for="import-tax" id="import-tax-field" hidden>PAJAK IMPOR INDONESIA (%)<input class="bc-select" id="import-tax" type="number" min="0" max="100" step="any" disabled required aria-describedby="import-tax-error"><span id="import-tax-error" class="field-error"></span></label>
         </div>
         <p id="settings-context" class="settings-context"></p>
         <div class="table-scroll" role="region" aria-label="Tabel angka contoh per negara; geser untuk melihat semua kolom" tabindex="0"><table class="rate-table"><caption id="settings-caption">Angka contoh untuk arah dan moda aktif</caption><thead><tr><th scope="col">Negara</th><th scope="col" id="rate-heading">Tarif kirim</th><th scope="col">Lokal (USD)</th><th scope="col">Bea (%)</th><th scope="col">Pajak (%)</th><th scope="col">Transit (hari)</th></tr></thead><tbody id="rate-rows"></tbody></table></div>
-        <div class="settings-actions"><button class="button secondary" type="submit">Simpan angka contoh</button><button class="button secondary" id="reset-settings" type="button">Kembalikan angka contoh</button></div>
+        <div class="settings-actions"><button class="button secondary bc-btn bc-btn--outline" type="submit">Simpan angka contoh</button><button class="button secondary bc-btn bc-btn--outline" id="reset-settings" type="button">Kembalikan angka contoh</button></div>
       </form>
       <p id="settings-status" class="hint" role="status"></p>
     </details>
     <section class="results" aria-labelledby="results-title">
-      <div class="results-top"><div><div class="eyebrow">TOTAL BIAYA SAMPAI TUJUAN</div><h2 id="results-title">Perbandingan negara <span id="count" class="count"></span></h2><p id="summary"></p></div><span class="sort">↑ Diurutkan dari total termurah</span></div>
+      <div class="results-top"><div><div class="eyebrow">TOTAL BIAYA SAMPAI TUJUAN</div><h2 id="results-title">Perbandingan negara <span id="count" class="count bc-badge bc-badge--secondary"></span></h2><p id="summary"></p></div><span class="sort">↑ Diurutkan dari total termurah</span></div>
       <p id="results-status" role="status" aria-live="polite" aria-atomic="true"></p>
       <div id="offers" class="offers" aria-live="polite"></div>
       <p class="results-note">ⓘ &nbsp; USD adalah mata uang utama; ≈ Rupiah memakai kurs contoh. Ekspor memakai bea/pajak negara tujuan; impor memakai bea/pajak Indonesia. Angka ini bukan saran atau perhitungan pabean resmi.</p>
     </section>
-    <noscript><p class="notice">Aktifkan JavaScript untuk memakai Kalkulator negara.</p></noscript>
+    <noscript><p class="notice bc-alert">Aktifkan JavaScript untuk memakai Kalkulator negara.</p></noscript>
   </main>
-  <footer class="shell"><a href="../index.html">← Pilihan halaman</a><span>© Raja Kirim · Demo ekspedisi</span><span>Hanya simulasi · Tidak terhubung ke layanan nyata</span></footer>
+  <footer class="shell"><a class="bc-btn bc-btn--ghost bc-btn--sm" href="../index.html">← Pilihan halaman</a><span>© Raja Kirim · Demo ekspedisi</span><span>Hanya simulasi · Tidak terhubung ke layanan nyata</span></footer>
 </body>
 </html>

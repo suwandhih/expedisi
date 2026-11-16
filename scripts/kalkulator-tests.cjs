@@ -240,7 +240,24 @@ module.exports = function checkCalculator(sources, sandbox) {
   assert.equal(calculator.saveSettings(settings, () => ({ setItem() { throw new Error('QuotaExceededError'); } })).saved, false);
   assert.match(sources.get('raja-kirim/kalkulator.js'), /window\.confirm\(/, 'Reset memerlukan konfirmasi');
   assert.doesNotMatch(sources.get('raja-kirim/kalkulator.js'), /\.innerHTML\s*=|insertAdjacentHTML|document\.write/, 'Kalkulator harus memakai DOM API untuk render');
-  assert.match(sources.get('raja-kirim/kalkulator.html'), /maxlength="120"/);
-  assert.match(sources.get('raja-kirim/kalkulator.html'), /aria-live="polite"/);
+  const calculatorHtml = sources.get('raja-kirim/kalkulator.html');
+  const calculatorCss = sources.get('raja-kirim/kalkulator.css');
+  const calculatorJs = sources.get('raja-kirim/kalkulator.js');
+  assert.match(calculatorHtml, /maxlength="120"/);
+  assert.match(calculatorHtml, /aria-live="polite"/);
+  assert.match(calculatorHtml, /<nav class="bc-nav" aria-label="Navigasi utama">/);
+  assert.match(calculatorHtml, /aria-current="page" href="kalkulator\.html"/);
+  for (const primitive of ['bc-header', 'bc-alert', 'bc-card', 'bc-select', 'bc-btn--primary', 'bc-btn--outline']) {
+    assert(calculatorHtml.includes(primitive), `Kalkulator memakai primitif bersama ${primitive}`);
+  }
+  assert.doesNotMatch(calculatorCss, /#[\da-f]{3,8}\b|\brgba?\s*\(/i, 'CSS kalkulator harus memakai token warna');
+  assert(calculatorCss.includes('var(--brand-destructive)'), 'Validasi memakai token destructive');
+  assert.match(calculatorCss, /\.table-scroll\s*\{[^}]*overflow-x:\s*auto/, 'Tabel lebar digeser di dalam panel');
+  for (const width of [1050, 650, 420]) {
+    assert(calculatorCss.includes(`@media (max-width: ${width}px)`), `Breakpoint kalkulator ${width}px dipertahankan`);
+  }
+  assert.match(calculatorJs, /element\('article', 'offer bc-card bc-card--raised'\)/);
+  assert.match(calculatorJs, /element\('button', 'button primary bc-btn bc-btn--primary', 'Buat surat penawaran'\)/);
+  assert.match(calculatorJs, /element\('input', 'bc-select'\)/);
   console.log(`OK kalkulator: ${comparisons} hasil ekspor/impor × moda; rumus CIF, urutan, validasi, simpan/muat ulang/reset, penyimpanan rusak/tidak tersedia; ${priceCases} kombinasi harga lama identik.`);
 };

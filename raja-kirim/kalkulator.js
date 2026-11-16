@@ -130,7 +130,7 @@
   }
 
   function settingsInput(id, value, label, min, max, integer = false) {
-    const input = element('input');
+    const input = element('input', 'bc-select');
     input.type = 'number';
     input.id = id;
     input.value = value;
@@ -224,12 +224,12 @@
   }
 
   function renderOffer(result) {
-    const card = element('article', 'offer');
+    const card = element('article', 'offer bc-card bc-card--raised');
     const heading = element('div', 'offer-heading');
     const name = element('div');
     name.append(element('h3', '', result.country), element('p', '', result.route));
     heading.append(name);
-    if (result.difference === 0) heading.append(element('span', 'offer-tag best', 'Termurah'));
+    if (result.difference === 0) heading.append(element('span', 'offer-tag best bc-badge bc-badge--primary', 'Termurah'));
     card.append(heading);
     const price = element('div', 'offer-data');
     price.append(element('span', '', 'TOTAL BIAYA SIMULASI'), element('strong', 'price', money(result.total)), element('p', 'idr-estimate', `≈ ${rupiah(result.totalIdr)}`), element('p', '', `${result.mode} · Transit contoh ${result.transit} hari`));
@@ -246,7 +246,7 @@
     const unit = result.mode === 'Udara' ? 'kg tertagih' : result.mode === 'LCL' ? 'W/M' : 'kontainer';
     details.append(breakdown, element('p', 'calculation-note', `${number(result.quantity)} ${unit} × ${money(result.rate)}. CIF ${money(result.cif)}. Pajak atas CIF + bea. Kurs USD 1 = ${rupiah(result.kurs)}. Perhitungan memakai presisi penuh; tampilan dibulatkan.`));
     const actions = element('div', 'offer-actions');
-    const button = element('button', 'button primary', 'Buat surat penawaran');
+    const button = element('button', 'button primary bc-btn bc-btn--primary', 'Buat surat penawaran');
     button.type = 'button';
     button.setAttribute('aria-label', `Buat surat penawaran untuk ${result.route}`);
     const status = element('p', 'field-error');
