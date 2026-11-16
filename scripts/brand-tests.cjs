@@ -19,11 +19,12 @@ module.exports = function checkBrand(sources) {
   }
 
   const raja = sources.get('raja-kirim/index.html');
-  for (const label of ['↗ Ekspor', 'Dari Indonesia', '↙ Impor', 'Ke Indonesia', 'Bandingkan harga →', '← Pilihan halaman']) {
+  for (const label of ['↗ Ekspor', 'Dari Indonesia', '↙ Impor', 'Ke Indonesia', 'Bandingkan harga →', 'Daftar pelanggan →']) {
     assert(raja.includes(label), `Comparison control missing: ${label}`);
   }
   assert.match(raja, /<button\b[^>]*type="submit"[^>]*>Bandingkan harga →<\/button>/);
-  assert.match(raja, /href="\.\.\/index\.html">← Pilihan halaman<\/a>/);
+  assert.match(raja, /href="surat\.html#pelanggan">Daftar pelanggan →<\/a>/);
+  assert.doesNotMatch(raja, /href="\.\.\/(?:lintas-samudra\/index\.html|index\.html)"/, 'Raja Kirim tidak boleh menautkan keluar ke situs lain');
   for (const id of ['origin', 'destination']) {
     assert.match(raja, new RegExp(`<label\\b[^>]*id="${id}-label"[^>]*for="${id}"`), `${id}: label dinamis harus terhubung ke select`);
     const select = raja.match(new RegExp(`<select\\b[^>]*id="${id}"[^>]*>`))?.[0];

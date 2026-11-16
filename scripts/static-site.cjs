@@ -8,6 +8,7 @@ const { Script } = require('node:vm');
 const checkCalculator = require('./kalkulator-tests.cjs');
 const checkQuotation = require('./penawaran-tests.cjs');
 const checkBrand = require('./brand-tests.cjs');
+const checkCustomers = require('./pelanggan-tests.cjs');
 
 const root = path.resolve(__dirname, '..');
 const output = path.join(root, 'dist');
@@ -27,6 +28,7 @@ const files = [
   'raja-kirim/kalkulator.css',
   'raja-kirim/tarif-contoh.js',
   'raja-kirim/penawaran.js',
+  'raja-kirim/pelanggan.js',
   'raja-kirim/surat.html',
   'raja-kirim/surat.css',
   'raja-kirim/surat.js'
@@ -94,7 +96,10 @@ function check() {
   assert.match(home, /href="raja-kirim\/index\.html"/, 'Pilihan halaman Raja Kirim tidak tersedia');
   assert.match(home, /href="lintas-samudra\/index\.html"/, 'Pilihan halaman Lintas Samudra tidak tersedia');
   assert.match(lintas, /href="\.\.\/raja-kirim\/index\.html"/, 'Navigasi ke Raja Kirim tidak tersedia');
-  assert.match(raja, /href="\.\.\/lintas-samudra\/index\.html"/, 'Navigasi ke Lintas Samudra tidak tersedia');
+  for (const file of ['raja-kirim/index.html', 'raja-kirim/kalkulator.html', 'raja-kirim/surat.html']) {
+    assert.doesNotMatch(sources.get(file), /href="\.\.\/(?:lintas-samudra\/index\.html|index\.html)"/, `${file}: navigasi Raja Kirim harus berdiri sendiri`);
+    assert.match(sources.get(file), /href="surat\.html#pelanggan">Daftar pelanggan<\/a>/, `${file}: daftar pelanggan harus mudah diakses`);
+  }
   const comparisonSections = ['<header', 'Mode demo.', 'comparison-hero', 'comparison-planner', 'class="results"', 'class="next bc-card"', '<footer'];
   let previousSection = -1;
   for (const section of comparisonSections) {
@@ -119,9 +124,7 @@ function check() {
   for (const file of ['raja-kirim/harga.css', 'raja-kirim/harga.js']) {
     assert(!/#[\da-f]{3,8}\b|\brgba?\s*\(/i.test(sources.get(file)), `${file}: warna harus berasal dari token`);
   }
-  for (const file of ['lintas-samudra/index.html', 'raja-kirim/index.html', 'raja-kirim/surat.html', 'raja-kirim/kalkulator.html']) {
-    assert.match(sources.get(file), /href="\.\.\/index\.html"/, `${file}: navigasi ke pilihan halaman tidak tersedia`);
-  }
+  assert.match(lintas, /href="\.\.\/index\.html"/, 'Lintas Samudra tetap memiliki navigasi ke pilihan halaman');
   const data = JSON.parse(sources.get('lintas-samudra/data.json'));
   assert(Array.isArray(data.shipments) && data.shipments.length > 0, 'Data pengiriman contoh tidak tersedia');
   const shipmentIds = new Set();
@@ -183,6 +186,7 @@ function check() {
   }
   checkCalculator(sources, sandbox);
   checkQuotation(sources, sandbox);
+  checkCustomers(sources);
   checkBrand(sources);
   const pageCount = files.filter((file) => file.endsWith('.html')).length;
   const scriptCount = files.filter((file) => file.endsWith('.js')).length;

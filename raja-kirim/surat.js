@@ -6,8 +6,8 @@ const customers = [
   { id: 'citra', nama: 'Citra Dewi', perusahaan: 'Toko Bunga Citra', nomor: 'RK-2026-003', tanggal: '14 November 2026', rute: 'Yogyakarta → Denpasar', layanan: 'Cargo', berat: '40 kg', total: 'Rp 640.000' }
 ];
 const defaults = {
-  quotation: '<p>Kepada Yth. {{nama}}<br>{{perusahaan}}</p><p>Terima kasih atas kepercayaan Anda. Berikut penawaran pengiriman dari Raja Kirim:</p><p>Nomor penawaran: <b>{{nomor}}</b><br>Tanggal: {{tanggal}}<br>Rute: {{rute}}<br>Layanan: {{layanan}}<br>Berat: {{berat}}<br>Total penawaran: <b>{{total}}</b><br>Rincian biaya: {{rincian}}</p><p>Penawaran ini merupakan contoh simulasi dan bukan transaksi sebenarnya.</p><p>Hormat kami,<br>Tim Raja Kirim</p>',
-  receipt: '<p><b>TANDA TERIMA</b></p><p>Telah diterima dari {{nama}} ({{perusahaan}}) untuk transaksi berikut:</p><p>Nomor: <b>{{nomor}}</b><br>Tanggal: {{tanggal}}<br>Rute: {{rute}}<br>Layanan: {{layanan}}<br>Berat: {{berat}}<br>Jumlah: <b>{{total}}</b></p><p>Dokumen ini hanya contoh simulasi, bukan bukti pembayaran yang sah.</p><p>Terima kasih,<br>Tim Raja Kirim</p>'
+  quotation: '<p>Kepada Yth. {{nama}}<br>{{perusahaan}}<br>Alamat: {{alamat}}<br>Fax: {{fax}}</p><p>Terima kasih atas kepercayaan Anda. Berikut penawaran pengiriman dari Raja Kirim:</p><p>Nomor penawaran: <b>{{nomor}}</b><br>Tanggal: {{tanggal}}<br>Rute: {{rute}}<br>Layanan: {{layanan}}<br>Berat: {{berat}}<br>Total penawaran: <b>{{total}}</b><br>Rincian biaya: {{rincian}}</p><p>Penawaran ini merupakan contoh simulasi dan bukan transaksi sebenarnya.</p><p>Hormat kami,<br>Tim Raja Kirim</p>',
+  receipt: '<p><b>TANDA TERIMA</b></p><p>Telah diterima dari {{nama}} ({{perusahaan}}) untuk transaksi berikut:<br>Alamat: {{alamat}}<br>Fax: {{fax}}</p><p>Nomor: <b>{{nomor}}</b><br>Tanggal: {{tanggal}}<br>Rute: {{rute}}<br>Layanan: {{layanan}}<br>Berat: {{berat}}<br>Jumlah: <b>{{total}}</b></p><p>Dokumen ini hanya contoh simulasi, bukan bukti pembayaran yang sah.</p><p>Terima kasih,<br>Tim Raja Kirim</p>'
 };
 const templates = { ...defaults };
 const history = [
@@ -23,23 +23,22 @@ const $ = id => document.getElementById(id);
 function brandValue(name) {
   return getComputedStyle(document.documentElement).getPropertyValue(`--${name}`).trim();
 }
-const storageKey = 'raja-kirim-surat-v1';
-const contactFields = ['alamat', 'email1', 'email2', 'phone1', 'phone2'];
+const pelanggan = window.RajaKirimPelanggan;
+const storageKey = pelanggan.storageKey;
 const sampleContacts = {
   ayu: { alamat: 'Jl. Contoh No. 10, Jakarta', email1: 'ayu@example.test', email2: 'kantor@example.test', phone1: '0812 0000 1001', phone2: '0812 0000 1002' },
   budi: { alamat: 'Jl. Contoh No. 20, Bandung', email1: 'budi@example.test', email2: '', phone1: '0812 0000 2001', phone2: '' },
   citra: { alamat: 'Jl. Contoh No. 30, Yogyakarta', email1: 'citra@example.test', email2: '', phone1: '0812 0000 3001', phone2: '' }
 };
-customers.forEach(customer => Object.assign(customer, sampleContacts[customer.id]));
+customers.forEach((customer, index) => {
+  Object.assign(customer, pelanggan.normalizeContact({ ...customer, ...sampleContacts[customer.id], fax: `021 0000 ${index + 1}003` }));
+});
+history.forEach(item => { item.destination = pelanggan.contactFor(customers.find(c => c.id === item.customer), item.channel).destination; });
+customers.forEach(customer => history.push(...pelanggan.missingExamples(customer, history)));
 try {
   const saved = localStorage.getItem(storageKey);
   if (saved !== null) {
-    const data = JSON.parse(saved);
-    const stringFields = ['id', 'nama', 'perusahaan', 'nomor', 'tanggal', 'rute', 'layanan', 'berat', 'total', ...contactFields];
-    if (!data || !Array.isArray(data.customers) || !Array.isArray(data.history) ||
-        !data.customers.every(c => c && stringFields.every(field => typeof c[field] === 'string') && c.id && c.nama && c.perusahaan) ||
-        new Set(data.customers.map(c => c.id)).size !== data.customers.length ||
-        !data.history.every(item => item && ['customer', 'subject', 'body', 'date'].every(field => typeof item[field] === 'string') && ['incoming', 'outgoing'].includes(item.direction) && ['Email', 'WhatsApp'].includes(item.channel) && data.customers.some(c => c.id === item.customer))) throw new Error('Invalid stored data');
+    const data = pelanggan.restore(JSON.parse(saved));
     customers.splice(0, customers.length, ...data.customers);
     history.splice(0, history.length, ...data.history);
   }
@@ -48,7 +47,7 @@ try {
 }
 function saveData() {
   try {
-    localStorage.setItem(storageKey, JSON.stringify({ customers, history }));
+    localStorage.setItem(storageKey, JSON.stringify({ version: 2, customers, history }));
     $('storage-status').textContent = '';
     return true;
   } catch (error) {
@@ -61,7 +60,7 @@ const safeTags = new Set(['P', 'DIV', 'BR', 'B', 'STRONG', 'I', 'EM', 'U', 'UL',
 // Copy only formatting elements and text; never retain user-supplied attributes or active content.
 function cleanNode(node, target, replacements = {}) {
   if (node.nodeType === Node.TEXT_NODE) {
-    target.append(document.createTextNode(node.nodeValue.replace(/\{\{(nama|perusahaan|nomor|tanggal|rute|layanan|berat|total|rincian)\}\}/g, (match, key) => replacements[key] ?? match)));
+    target.append(document.createTextNode(node.nodeValue.replace(/\{\{(nama|perusahaan|alamat|fax|nomor|tanggal|rute|layanan|berat|total|rincian)\}\}/g, (match, key) => replacements[key] ?? match)));
   } else if (node.nodeType === Node.ELEMENT_NODE) {
     if (['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'SVG', 'IMG'].includes(node.tagName)) return;
     let destination = target;
@@ -103,9 +102,9 @@ function refreshCustomerOptions(initial = false) {
   });
   const filter = $('history-filter');
   const value = filter.value;
-  filter.replaceChildren(new Option('Semua pelanggan', 'all'));
-  customers.forEach(customer => filter.add(new Option(customer.nama, customer.id)));
-  filter.value = customers.some(c => c.id === value) ? value : 'all';
+  filter.replaceChildren();
+  customers.forEach(customer => filter.add(new Option(`${customer.nama} · ${customer.perusahaan}`, customer.id)));
+  filter.value = customers.some(c => c.id === value) ? value : (customers[0]?.id || '');
 }
 refreshCustomerOptions(true);
 
@@ -168,11 +167,19 @@ function activateHashTab() {
 window.addEventListener('hashchange', activateHashTab);
 
 let direction = 'all';
+let historyPage = 1;
 function renderHistory() {
   const list = $('history-list'); list.replaceChildren();
-  const entries = history.filter(item => (direction === 'all' || item.direction === direction) && ($('history-filter').value === 'all' || item.customer === $('history-filter').value));
-  $('history-count').textContent = String(entries.length);
-  appendHistory(list, entries);
+  const customer = customers.find(c => c.id === $('history-filter').value);
+  const result = pelanggan.mailbox(history, { customer: customer?.id, direction, channel: $('history-channel').value, page: historyPage });
+  historyPage = result.page;
+  $('history-customer-title').textContent = customer ? `${customer.nama} · ${customer.perusahaan}` : 'Tambahkan pelanggan dahulu.';
+  $('history-count').textContent = String(result.count);
+  $('history-page').textContent = `Halaman ${result.page} / ${result.pages}`;
+  $('history-prev').disabled = result.page === 1;
+  $('history-next').disabled = result.page === result.pages;
+  $('history-examples').disabled = !customer;
+  appendHistory(list, result.entries);
 }
 function appendHistory(list, entries) {
   if (!entries.length) { const empty = document.createElement('p'); empty.className = 'empty'; empty.textContent = 'Belum ada surat untuk pelanggan atau filter ini.'; list.append(empty); return; }
@@ -185,34 +192,54 @@ function appendHistory(list, entries) {
     top.append(badge, time);
     const title = document.createElement('h4'); title.textContent = item.subject;
     const meta = document.createElement('p'); meta.textContent = `${customer.nama} · ${customer.perusahaan} · ${item.channel} (simulasi)`;
+    const address = document.createElement('p'); address.textContent = `${item.direction === 'incoming' ? 'Dari' : 'Kepada'}: ${item.destination || 'Kontak tidak tercatat pada riwayat lama'}`;
     const body = document.createElement('p'); body.className = 'history-message'; body.textContent = item.body;
-    article.append(top, title, meta, body); list.append(article);
+    article.append(top, title, meta, address, body); list.append(article);
   });
 }
-$('history-filter').addEventListener('change', renderHistory);
+function resetHistoryPage() { historyPage = 1; setStatus($('history-status'), ''); renderHistory(); }
+$('history-filter').addEventListener('change', resetHistoryPage);
+$('history-channel').addEventListener('change', resetHistoryPage);
+$('history-prev').addEventListener('click', () => { historyPage -= 1; renderHistory(); });
+$('history-next').addEventListener('click', () => { historyPage += 1; renderHistory(); });
+$('history-examples').addEventListener('click', () => {
+  const customer = customers.find(c => c.id === $('history-filter').value);
+  if (!customer) return;
+  const entries = pelanggan.missingExamples(customer, history);
+  if (!entries.length) { setStatus($('history-status'), 'Contoh yang tersedia sudah lengkap. Isi email dan WhatsApp pelanggan untuk melengkapi saluran yang belum tersedia.'); return; }
+  history.unshift(...entries);
+  const saved = saveData();
+  historyPage = 1; renderHistory(); renderCustomerDetail();
+  setStatus($('history-status'), saved ? `${entries.length} contoh ditambahkan khusus ${customer.nama}. Tidak ada pesan dikirim.` : 'Contoh ditambahkan sementara; penyimpanan browser gagal. Tidak ada pesan dikirim.', !saved);
+});
+function chooseHistoryDirection(value) {
+  direction = value; historyPage = 1;
+  document.querySelectorAll('.filter').forEach(item => { const active = item.dataset.direction === value; item.classList.toggle('active', active); item.setAttribute('aria-pressed', String(active)); });
+}
 document.querySelectorAll('.filter').forEach(button => button.addEventListener('click', () => {
-  direction = button.dataset.direction;
-  document.querySelectorAll('.filter').forEach(item => { const active = item === button; item.classList.toggle('active', active); item.setAttribute('aria-pressed', String(active)); });
-  renderHistory();
+  chooseHistoryDirection(button.dataset.direction); renderHistory();
 }));
 renderHistory();
 function setStatus(element, message, error = false) { element.textContent = message; element.classList.toggle('error', error); }
+function mailDraft() {
+  return pelanggan.createMessages(selected($('mail-customers')), document.querySelector('input[name=channel]:checked').value,
+    document.querySelector('input[name=mail-direction]:checked').value, $('mail-subject').value, $('mail-body').innerText,
+    new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date()));
+}
 function validateMail() {
-  if (!selected($('mail-customers')).length) return 'Pilih setidaknya satu pelanggan.';
-  if (!$('mail-subject').value.trim()) return 'Isi subjek pesan.';
-  if (!$('mail-body').innerText.trim()) return 'Isi pesan terlebih dahulu.';
-  return '';
+  const draft = mailDraft();
+  return draft.ok ? '' : draft.message;
 }
 function renderMailPreview() {
   const error = validateMail();
   if (error) { setStatus($('mail-status'), error, true); $('mail-preview').hidden = true; return false; }
   setStatus($('mail-status'), 'Pratinjau saja — pesan tidak akan dikirim.');
   const content = $('mail-preview-content'); content.replaceChildren();
-  const channel = document.querySelector('input[name=channel]:checked').value;
   const mailDirection = document.querySelector('input[name=mail-direction]:checked').value;
   selected($('mail-customers')).forEach(customer => {
+    const { channel, destination } = pelanggan.contactFor(customer, document.querySelector('input[name=channel]:checked').value);
     const card = document.createElement('div'); card.className = 'message-preview';
-    const recipient = document.createElement('p'); recipient.textContent = `${mailDirection === 'incoming' ? 'Dari' : 'Kepada'}: ${customer.nama} · ${customer.perusahaan} | ${channel} simulasi`;
+    const recipient = document.createElement('p'); recipient.textContent = `${mailDirection === 'incoming' ? 'Dari' : 'Kepada'}: ${customer.nama} · ${customer.perusahaan} | ${channel}: ${destination} (simulasi)`;
     const subject = document.createElement('p'); subject.textContent = `Subjek: ${$('mail-subject').value.trim()}`;
     const body = document.createElement('div'); body.className = 'rich-content'; body.append(sanitized($('mail-body'), customer));
     card.append(recipient, subject, body); content.append(card);
@@ -222,13 +249,16 @@ function renderMailPreview() {
 $('preview-mail').addEventListener('click', renderMailPreview);
 $('record-mail').addEventListener('click', () => {
   if (!renderMailPreview()) return;
-  const channel = document.querySelector('input[name=channel]:checked').value;
-  const mailDirection = document.querySelector('input[name=mail-direction]:checked').value;
-  const date = new Intl.DateTimeFormat('id-ID', { day: 'numeric', month: 'short', year: 'numeric' }).format(new Date());
-  selected($('mail-customers')).forEach(customer => {
+  const draft = mailDraft();
+  if (!draft.ok) { setStatus($('mail-status'), draft.message, true); return; }
+  draft.entries.forEach(entry => {
+    const customer = customers.find(c => c.id === entry.customer);
     const body = document.createElement('div'); body.append(sanitized($('mail-body'), customer));
-    history.unshift({ customer: customer.id, direction: mailDirection, channel, subject: $('mail-subject').value.trim(), body: body.innerText || body.textContent, date });
+    history.unshift({ ...entry, body: body.innerText || body.textContent });
   });
+  $('history-filter').value = draft.entries[0].customer;
+  $('history-channel').value = 'all';
+  chooseHistoryDirection('all');
   const saved = saveData();
   renderHistory(); renderCustomerDetail(); setStatus($('mail-status'), saved ? 'Simulasi dicatat di browser ini. Tidak ada pesan yang dikirim.' : 'Simulasi dicatat sementara, tetapi tidak dapat disimpan. Tidak ada pesan yang dikirim.', !saved);
 });
@@ -238,7 +268,8 @@ document.querySelectorAll('input[name=channel], input[name=mail-direction]').for
 
 let selectedCustomerId = customers[0]?.id;
 let editingCustomerId = null;
-const customerInputs = { nama: 'customer-name', perusahaan: 'customer-company', alamat: 'customer-address', email1: 'customer-email1', email2: 'customer-email2', phone1: 'customer-phone1', phone2: 'customer-phone2' };
+const customerInputs = { nama: 'customer-name', perusahaan: 'customer-company', alamat: 'customer-address', email1: 'customer-email1', email2: 'customer-email2', phone1: 'customer-phone1', phone2: 'customer-phone2', fax: 'customer-fax' };
+const preferenceInputs = { primaryEmail: 'primary-email', primaryPhone: 'primary-phone', primaryChannel: 'primary-channel' };
 function renderCustomerDetail() {
   const detail = $('customer-detail'); detail.replaceChildren();
   const customer = customers.find(c => c.id === selectedCustomerId);
@@ -249,19 +280,42 @@ function renderCustomerDetail() {
   edit.addEventListener('click', () => {
     editingCustomerId = customer.id;
     Object.entries(customerInputs).forEach(([field, id]) => { $(id).value = customer[field] || ''; });
+    Object.entries(preferenceInputs).forEach(([field, name]) => {
+      document.querySelectorAll(`input[name="${name}"]`).forEach(input => { input.checked = input.value === customer[field]; });
+    });
     $('customer-form-title').textContent = 'Edit pelanggan'; $('cancel-customer').hidden = false;
     setStatus($('customer-status'), ''); $('customer-name').focus();
   });
   heading.append(name, edit); detail.append(heading);
   const info = document.createElement('dl'); info.className = 'customer-info';
-  [['Alamat', customer.alamat], ['Email 1', customer.email1], ['Email 2', customer.email2], ['Telepon 1', customer.phone1], ['Telepon 2', customer.phone2]].forEach(([label, value]) => {
+  [['Alamat jalan', customer.alamat], ['Fax', customer.fax], ['Saluran utama', customer.primaryChannel],
+    ['Email 1', `${customer.email1 || '—'}${customer.primaryEmail === 'email1' && customer.email1 ? ' · Utama' : ''}`],
+    ['Email 2', `${customer.email2 || '—'}${customer.primaryEmail === 'email2' && customer.email2 ? ' · Utama' : ''}`],
+    ['WhatsApp 1', `${customer.phone1 || '—'}${customer.primaryPhone === 'phone1' && customer.phone1 ? ' · Utama' : ''}`],
+    ['WhatsApp 2', `${customer.phone2 || '—'}${customer.primaryPhone === 'phone2' && customer.phone2 ? ' · Utama' : ''}`]].forEach(([label, value]) => {
     const dt = document.createElement('dt'); dt.textContent = label;
     const dd = document.createElement('dd'); dd.textContent = value || '—'; info.append(dt, dd);
   });
-  const historyTitle = document.createElement('h4'); historyTitle.textContent = 'Riwayat simulasi';
-  const list = document.createElement('div'); list.className = 'history-list';
-  appendHistory(list, history.filter(item => item.customer === customer.id));
-  detail.append(info, historyTitle, list);
+  const historyTitle = document.createElement('h4'); historyTitle.textContent = `Kotak pesan ${customer.nama}`;
+  const boxes = document.createElement('div'); boxes.className = 'customer-mailboxes';
+  for (const channel of ['Email', 'WhatsApp']) {
+    const box = document.createElement('section'); box.className = 'customer-mailbox';
+    const title = document.createElement('h4'); title.textContent = channel; box.append(title);
+    for (const value of ['incoming', 'outgoing']) {
+      const count = pelanggan.mailbox(history, { customer: customer.id, channel, direction: value }).count;
+      const button = document.createElement('button'); button.type = 'button'; button.className = 'bc-btn bc-btn--outline bc-btn--sm';
+      button.textContent = `${value === 'incoming' ? '↓ Kotak masuk' : '↑ Kotak keluar'} (${count})`;
+      button.setAttribute('aria-label', `${button.textContent} ${channel} milik ${customer.nama}`);
+      button.addEventListener('click', () => {
+        $('history-filter').value = customer.id; $('history-channel').value = channel;
+        chooseHistoryDirection(value); renderHistory(); activateTab($('tab-mail')); historyReplaceWithoutHash();
+        $('history-filter').focus(); $('history-title').scrollIntoView({ block: 'start' });
+      });
+      box.append(button);
+    }
+    boxes.append(box);
+  }
+  detail.append(info, historyTitle, boxes);
 }
 function renderCustomerList() {
   const list = $('customer-list'); list.replaceChildren();
@@ -282,7 +336,9 @@ $('cancel-customer').addEventListener('click', () => { resetCustomerForm(); setS
 $('customer-form').addEventListener('submit', event => {
   event.preventDefault();
   const values = Object.fromEntries(Object.entries(customerInputs).map(([field, id]) => [field, $(id).value.trim()]));
-  if (!values.nama || !values.perusahaan) { setStatus($('customer-status'), 'Isi nama PIC dan perusahaan.', true); return; }
+  Object.entries(preferenceInputs).forEach(([field, name]) => { values[field] = document.querySelector(`input[name="${name}"]:checked`)?.value || ''; });
+  const error = pelanggan.validateContact(values);
+  if (error) { setStatus($('customer-status'), error, true); return; }
   let customer = customers.find(c => c.id === editingCustomerId);
   if (customer) Object.assign(customer, values);
   else {
@@ -330,6 +386,7 @@ function renderDocuments() {
     const label = document.createElement('span'); label.textContent = `${currentType === 'quotation' ? 'QUOTATION · PDF' : 'TANDA TERIMA · PNG'}\nSIMULASI`; label.style.whiteSpace = 'pre-line';
     top.append(brand, label);
     const values = quotation.replacements(customer, quotationPayload, currentType);
+    values.alamat ||= '—'; values.fax ||= '—';
     const content = document.createElement('div'); content.className = 'rich-content'; content.append(sanitized($('template-editor'), values));
     const actions = document.createElement('div'); actions.className = 'sheet-actions';
     const button = document.createElement('button'); button.type = 'button'; button.className = 'button secondary bc-btn bc-btn--outline';
