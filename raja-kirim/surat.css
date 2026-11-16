@@ -50,6 +50,10 @@ h4 { font-size: 15px; }
 .section-heading p:last-child, .card-heading p:not(.eyebrow) { margin-top: 7px; color: var(--muted); font-size: 13px; line-height: 1.6; }
 .mail-grid { display: grid; grid-template-columns: minmax(290px, .8fr) minmax(0, 1.35fr); gap: 20px; align-items: start; }
 .docs-grid, .customer-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 20px; align-items: start; }
+.quotation-source { display: flex; flex-wrap: wrap; align-items: center; gap: 16px; margin-bottom: 18px; padding: 18px; border: 1px solid var(--line); border-left: 4px solid var(--blue); border-radius: 8px; color: var(--navy); }
+.quotation-source > div { flex: 1 1 240px; min-width: 0; overflow-wrap: anywhere; }
+.quotation-source .button { white-space: normal; }
+#quotation-source-status:not(:empty) { margin-bottom: 18px; }
 .customer-list { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 22px; }
 .customer-choice { padding: 9px 10px; border: 1px solid #d3d9e3; border-radius: 4px; background: #fff; color: #33435b; font-size: 12px; text-align: left; }
 .customer-choice[aria-pressed=true] { border-color: var(--blue); background: #edf0fc; color: #213f9e; }

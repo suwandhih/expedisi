@@ -109,9 +109,7 @@
   const loaded = loadSettings();
   let settings = loaded.settings;
   let active = { direction: 'ekspor', mode: 'LCL' };
-  const money = (value) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'USD', minimumFractionDigits: 2, maximumFractionDigits: 2 }).format(value);
-  const rupiah = (value) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value);
-  const number = (value) => new Intl.NumberFormat('id-ID', { maximumFractionDigits: 3 }).format(value);
+  const { money, rupiah, number } = window.RajaKirimPenawaran.format;
   const readNumber = (input) => input.value.trim() === '' ? NaN : Number(input.value);
   const element = (tag, className, text) => {
     const node = document.createElement(tag);
@@ -247,7 +245,18 @@
     });
     const unit = result.mode === 'Udara' ? 'kg tertagih' : result.mode === 'LCL' ? 'W/M' : 'kontainer';
     details.append(breakdown, element('p', 'calculation-note', `${number(result.quantity)} ${unit} × ${money(result.rate)}. CIF ${money(result.cif)}. Pajak atas CIF + bea. Kurs USD 1 = ${rupiah(result.kurs)}. Perhitungan memakai presisi penuh; tampilan dibulatkan.`));
-    card.append(details);
+    const actions = element('div', 'offer-actions');
+    const button = element('button', 'button primary', 'Buat surat penawaran');
+    button.type = 'button';
+    button.setAttribute('aria-label', `Buat surat penawaran untuk ${result.route}`);
+    const status = element('p', 'field-error');
+    status.setAttribute('role', 'status');
+    button.addEventListener('click', () => {
+      const saved = window.RajaKirimPenawaran.handoff(result);
+      status.textContent = saved.message;
+    });
+    actions.append(button);
+    card.append(details, actions, status);
     return card;
   }
 

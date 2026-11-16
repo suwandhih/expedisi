@@ -6,7 +6,7 @@ const customers = [
   { id: 'citra', nama: 'Citra Dewi', perusahaan: 'Toko Bunga Citra', nomor: 'RK-2026-003', tanggal: '14 November 2026', rute: 'Yogyakarta → Denpasar', layanan: 'Cargo', berat: '40 kg', total: 'Rp 640.000' }
 ];
 const defaults = {
-  quotation: '<p>Kepada Yth. {{nama}}<br>{{perusahaan}}</p><p>Terima kasih atas kepercayaan Anda. Berikut penawaran pengiriman dari Raja Kirim:</p><p>Nomor penawaran: <b>{{nomor}}</b><br>Tanggal: {{tanggal}}<br>Rute: {{rute}}<br>Layanan: {{layanan}}<br>Berat: {{berat}}<br>Total penawaran: <b>{{total}}</b></p><p>Penawaran ini merupakan contoh simulasi dan bukan transaksi sebenarnya.</p><p>Hormat kami,<br>Tim Raja Kirim</p>',
+  quotation: '<p>Kepada Yth. {{nama}}<br>{{perusahaan}}</p><p>Terima kasih atas kepercayaan Anda. Berikut penawaran pengiriman dari Raja Kirim:</p><p>Nomor penawaran: <b>{{nomor}}</b><br>Tanggal: {{tanggal}}<br>Rute: {{rute}}<br>Layanan: {{layanan}}<br>Berat: {{berat}}<br>Total penawaran: <b>{{total}}</b><br>Rincian biaya: {{rincian}}</p><p>Penawaran ini merupakan contoh simulasi dan bukan transaksi sebenarnya.</p><p>Hormat kami,<br>Tim Raja Kirim</p>',
   receipt: '<p><b>TANDA TERIMA</b></p><p>Telah diterima dari {{nama}} ({{perusahaan}}) untuk transaksi berikut:</p><p>Nomor: <b>{{nomor}}</b><br>Tanggal: {{tanggal}}<br>Rute: {{rute}}<br>Layanan: {{layanan}}<br>Berat: {{berat}}<br>Jumlah: <b>{{total}}</b></p><p>Dokumen ini hanya contoh simulasi, bukan bukti pembayaran yang sah.</p><p>Terima kasih,<br>Tim Raja Kirim</p>'
 };
 const templates = { ...defaults };
@@ -57,7 +57,7 @@ const safeTags = new Set(['P', 'DIV', 'BR', 'B', 'STRONG', 'I', 'EM', 'U', 'UL',
 // Copy only formatting elements and text; never retain user-supplied attributes or active content.
 function cleanNode(node, target, replacements = {}) {
   if (node.nodeType === Node.TEXT_NODE) {
-    target.append(document.createTextNode(node.nodeValue.replace(/\{\{(nama|perusahaan|nomor|tanggal|rute|layanan|berat|total)\}\}/g, (match, key) => replacements[key] ?? match)));
+    target.append(document.createTextNode(node.nodeValue.replace(/\{\{(nama|perusahaan|nomor|tanggal|rute|layanan|berat|total|rincian)\}\}/g, (match, key) => replacements[key] ?? match)));
   } else if (node.nodeType === Node.ELEMENT_NODE) {
     if (['SCRIPT', 'STYLE', 'IFRAME', 'OBJECT', 'SVG', 'IMG'].includes(node.tagName)) return;
     let destination = target;
@@ -145,7 +145,7 @@ document.querySelectorAll('[role=tab]').forEach(tab => tab.addEventListener('cli
   activateTab(tab);
   if (tab.id === 'tab-customers') {
     if (location.hash !== '#pelanggan') location.hash = 'pelanggan';
-  } else if (location.hash === '#pelanggan') {
+  } else if (location.hash === '#pelanggan' || location.hash === '#dokumen') {
     historyReplaceWithoutHash();
   }
 }));
@@ -154,10 +154,14 @@ function historyReplaceWithoutHash() {
 }
 function activateHashTab() {
   if (location.hash === '#pelanggan') activateTab($('tab-customers'));
-  else activateTab($('tab-mail'));
+  else if (location.hash === '#dokumen') {
+    activateTab($('tab-docs'));
+    selectDocumentType('quotation');
+    loadQuotationSource();
+    renderDocuments();
+  } else activateTab($('tab-mail'));
 }
 window.addEventListener('hashchange', activateHashTab);
-if (location.hash === '#pelanggan') activateHashTab();
 
 let direction = 'all';
 function renderHistory() {
@@ -292,8 +296,26 @@ $('customer-form').addEventListener('submit', event => {
 renderCustomerList();
 
 let currentType = 'quotation';
+const quotation = window.RajaKirimPenawaran;
+let quotationPayload = null;
 $('template-editor').innerHTML = defaults[currentType];
+function loadQuotationSource() {
+  const loaded = quotation.loadPayload();
+  quotationPayload = loaded.payload;
+  setStatus($('quotation-source-status'), loaded.message, loaded.state === 'error');
+}
+function renderQuotationSource() {
+  $('quotation-source').hidden = !quotationPayload;
+  $('quotation-source-text').textContent = quotationPayload ? `Data dari Kalkulator negara: ${quotationPayload.rute} · ${quotationPayload.total}` : '';
+}
+$('reset-quotation-source').addEventListener('click', () => {
+  const removed = quotation.clearPayload();
+  if (removed.cleared) quotationPayload = null;
+  setStatus($('quotation-source-status'), removed.message, !removed.cleared);
+  renderDocuments();
+});
 function renderDocuments() {
+  renderQuotationSource();
   const container = $('doc-previews'); container.replaceChildren();
   const chosen = selected($('doc-customers'));
   if (!chosen.length) { const empty = document.createElement('p'); empty.className = 'empty'; empty.textContent = 'Pilih setidaknya satu pelanggan untuk melihat dokumen.'; container.append(empty); return; }
@@ -303,7 +325,8 @@ function renderDocuments() {
     const brand = document.createElement('strong'); brand.textContent = '✦ Raja Kirim';
     const label = document.createElement('span'); label.textContent = `${currentType === 'quotation' ? 'QUOTATION · PDF' : 'TANDA TERIMA · PNG'}\nSIMULASI`; label.style.whiteSpace = 'pre-line';
     top.append(brand, label);
-    const content = document.createElement('div'); content.className = 'rich-content'; content.append(sanitized($('template-editor'), customer));
+    const values = quotation.replacements(customer, quotationPayload, currentType);
+    const content = document.createElement('div'); content.className = 'rich-content'; content.append(sanitized($('template-editor'), values));
     const actions = document.createElement('div'); actions.className = 'sheet-actions';
     const button = document.createElement('button'); button.type = 'button'; button.className = 'button secondary';
     button.textContent = currentType === 'quotation' ? 'Cetak / simpan PDF' : 'Unduh PNG';
@@ -312,15 +335,23 @@ function renderDocuments() {
     actions.append(button); sheet.append(top, content, actions); container.append(sheet);
   });
 }
+function selectDocumentType(type) {
+  if (currentType !== type) {
+    templates[currentType] = safeHTML($('template-editor'));
+    currentType = type;
+    $('template-editor').innerHTML = templates[currentType];
+  }
+  $('document-type').value = type;
+}
 $('document-type').addEventListener('change', event => {
-  templates[currentType] = safeHTML($('template-editor'));
-  currentType = event.target.value; $('template-editor').innerHTML = templates[currentType];
+  selectDocumentType(event.target.value);
   setStatus($('doc-status'), ''); renderDocuments();
 });
 $('template-editor').addEventListener('input', renderDocuments);
 $('doc-customers').addEventListener('change', renderDocuments);
 $('reset-template').addEventListener('click', () => { templates[currentType] = defaults[currentType]; $('template-editor').innerHTML = defaults[currentType]; setStatus($('doc-status'), 'Template dikembalikan ke contoh awal.'); renderDocuments(); });
-renderDocuments();
+if (location.hash === '#dokumen' || location.hash === '#pelanggan') activateHashTab();
+if (location.hash !== '#dokumen') { loadQuotationSource(); renderDocuments(); }
 
 function exportPDF(customer, content) {
   const printWindow = window.open('', '_blank');

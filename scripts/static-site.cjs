@@ -6,6 +6,7 @@ const { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, unlinkSy
 const path = require('node:path');
 const { Script } = require('node:vm');
 const checkCalculator = require('./kalkulator-tests.cjs');
+const checkQuotation = require('./penawaran-tests.cjs');
 
 const root = path.resolve(__dirname, '..');
 const output = path.join(root, 'dist');
@@ -22,6 +23,7 @@ const files = [
   'raja-kirim/kalkulator.js',
   'raja-kirim/kalkulator.css',
   'raja-kirim/tarif-contoh.js',
+  'raja-kirim/penawaran.js',
   'raja-kirim/surat.html',
   'raja-kirim/surat.css',
   'raja-kirim/surat.js'
@@ -61,7 +63,9 @@ function check() {
         if (target.hash) {
           const customerTab = target.file === 'raja-kirim/surat.html' && target.hash === '#pelanggan'
             && sources.get('raja-kirim/surat.js').includes("location.hash === '#pelanggan'");
-          assert(customerTab || sources.get(target.file).includes(`id="${target.hash.slice(1)}"`), `${file}: bagian tujuan tidak ditemukan`);
+          const documentTab = target.file === 'raja-kirim/surat.html' && target.hash === '#dokumen'
+            && sources.get('raja-kirim/surat.js').includes("location.hash === '#dokumen'");
+          assert(customerTab || documentTab || sources.get(target.file).includes(`id="${target.hash.slice(1)}"`), `${file}: bagian tujuan tidak ditemukan`);
         }
       }
     }
@@ -133,7 +137,13 @@ function check() {
     assert(tags.every((tag) => /\bdefer\b/.test(tag)), `${file}: skrip harus defer`);
     assert(tags.findIndex((tag) => tag.includes('tarif-contoh.js')) < tags.findIndex((tag) => tag.includes(script)), `${file}: data harus dimuat sebelum konsumen`);
   }
+  for (const [file, consumer] of [['raja-kirim/kalkulator.html', 'kalkulator.js'], ['raja-kirim/surat.html', 'surat.js']]) {
+    const tags = [...sources.get(file).matchAll(/<script\b[^>]*>/g)].map((match) => match[0]);
+    const order = ['tarif-contoh.js', 'penawaran.js', consumer].map((script) => tags.findIndex((tag) => tag.includes(`src="${script}"`) && /\bdefer\b/.test(tag)));
+    assert(order.every((index) => index >= 0) && order[0] < order[1] && order[1] < order[2], `${file}: urutan modul penawaran/data/konsumen tidak valid`);
+  }
   checkCalculator(sources, sandbox);
+  checkQuotation(sources, sandbox);
   const pageCount = files.filter((file) => file.endsWith('.html')).length;
   const scriptCount = files.filter((file) => file.endsWith('.js')).length;
   console.log(`OK: ${pageCount} halaman HTML, ${scriptCount} skrip JavaScript, ${references} referensi lokal, ${data.shipments.length} pengiriman contoh; navigasi situs tersedia.`);
