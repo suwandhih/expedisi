@@ -35,7 +35,7 @@ function renderRates() {
   offers = vendors.map((vendor) => ({ ...vendor, name: mode === 'Udara' ? vendor.air : vendor.name, base: base + vendor.adjustment, total: base + vendor.adjustment + vendor.local, days: Math.max(1, days + vendor.days), origin, destination, mode })).sort((a, b) => a.total - b.total);
   $('#route-summary').textContent = `${origin} → ${destination} · ${mode === 'Udara' ? 'Udara' : 'Laut · ' + mode} · Harga simulasi`;
   $('#result-count').textContent = `${offers.length} opsi`;
-  $('#rate-results').innerHTML = offers.map((offer, index) => `<article class="rate-card"><div class="vendor"><div class="vendor-logo">${offer.mark}</div><div><h4>${offer.name}</h4><span>${offer.label} · Vendor simulasi</span></div></div><div class="rate-meta"><span>ESTIMASI TRANSIT</span><strong>${offer.days} hari</strong></div><div class="rate-price"><span>TOTAL ESTIMASI</span><strong>${money(offer.total)}</strong></div><button class="button secondary choose" data-index="${index}">Pilih &amp; Book <span>→</span></button><details class="rate-details"><summary>Rincian biaya</summary><div><span>Base freight</span><strong>${money(offer.base)}</strong></div><div><span>Local charges</span><strong>${money(offer.local)}</strong></div><div><span>Total estimasi</span><strong>${money(offer.total)}</strong></div><small>USD · Tarif dan waktu hanya simulasi; bukan penawaran aktual.</small></details></article>`).join('');
+  $('#rate-results').innerHTML = offers.map((offer, index) => `<article class="rate-card"><div class="vendor"><div class="vendor-logo">${offer.mark}</div><div><h4>${offer.name}</h4><span>${offer.label} · Vendor simulasi</span></div></div><div class="rate-meta"><span>ESTIMASI TRANSIT</span><strong>${offer.days} hari</strong></div><div class="rate-price"><span>TOTAL ESTIMASI</span><strong>${money(offer.total)}</strong></div><button class="button secondary choose bc-btn bc-btn--outline" data-index="${index}">Pilih &amp; Book <span>→</span></button><details class="rate-details"><summary>Rincian biaya</summary><div><span>Base freight</span><strong>${money(offer.base)}</strong></div><div><span>Local charges</span><strong>${money(offer.local)}</strong></div><div><span>Total estimasi</span><strong>${money(offer.total)}</strong></div><small>USD · Tarif dan waktu hanya simulasi; bukan penawaran aktual.</small></details></article>`).join('');
 }
 $('#rate-form').addEventListener('submit', (event) => {
   event.preventDefault();
@@ -62,7 +62,7 @@ function renderShipment() {
   const s = shipments[Number($('#shipment-select').value)];
   if (!s) return;
   const latest = [...s.events].reverse().find((event) => !event.planned);
-  $('#tracking-detail').innerHTML = `<div class="shipment-status"><span class="status-dot"></span><div><small>STATUS PENGIRIMAN</small><strong>${escapeHtml(s.status)}</strong></div><span class="badge">${escapeHtml(s.mode)}</span></div><div class="tracking-route"><div><small>ASAL</small><strong>${escapeHtml(s.origin)}</strong></div><span>→</span><div><small>TUJUAN</small><strong>${escapeHtml(s.destination)}</strong></div></div><div class="tracking-details">${detailRow(s.referenceType, s.reference)}${detailRow('Carrier', s.carrier)}${detailRow('Checkpoint terakhir', latest.place)}${detailRow('Koordinat terakhir', s.coordinates)}${detailRow('Pembaruan contoh', s.lastUpdate)}${detailRow('ETA', s.eta)}</div>`;
+  $('#tracking-detail').innerHTML = `<div class="shipment-status"><span class="status-dot"></span><div><small>STATUS PENGIRIMAN</small><strong>${escapeHtml(s.status)}</strong></div><span class="badge bc-badge">${escapeHtml(s.mode)}</span></div><div class="tracking-route"><div><small>ASAL</small><strong>${escapeHtml(s.origin)}</strong></div><span>→</span><div><small>TUJUAN</small><strong>${escapeHtml(s.destination)}</strong></div></div><div class="tracking-details">${detailRow(s.referenceType, s.reference)}${detailRow('Carrier', s.carrier)}${detailRow('Checkpoint terakhir', latest.place)}${detailRow('Koordinat terakhir', s.coordinates)}${detailRow('Pembaruan contoh', s.lastUpdate)}${detailRow('ETA', s.eta)}</div>`;
   $('#history').innerHTML = [...s.events].reverse().map((e) => `<div class="history-item ${e.planned ? 'planned' : ''}"><span class="history-dot"></span><div><strong>${escapeHtml(e.title)}</strong><p>${escapeHtml(e.place)}</p></div><time>${escapeHtml(e.time)}</time></div>`).join('');
   const steps = [
     ['01', 'Booking & quotation', `${s.origin} → ${s.destination}`, `${s.mode} · ${s.carrier} · ${money(s.invoice.base + s.invoice.local)}`, `Pengirim: ${s.sender} · Penerima: ${s.receiver}`, `Booking: ${s.bookingStatus}`],
@@ -73,13 +73,17 @@ function renderShipment() {
   ];
   $('#operations').innerHTML = steps.map((step) => `<article class="operation"><span class="operation-number">${step[0]}</span><h3>${escapeHtml(step[1])}</h3>${step.slice(2).map((line) => `<p>${escapeHtml(line)}</p>`).join('')}</article>`).join('');
   $('#documents').innerHTML = s.documents.map((d) => `<div><span>▧ &nbsp; ${escapeHtml(d.name)}</span><strong>${escapeHtml(d.status)}</strong></div>`).join('');
-  $('#pod').innerHTML = s.pod ? `<div class="pod-box"><span class="badge">DITERIMA · SIMULASI</span>${detailRow('Penerima', s.pod.recipient)}${detailRow('Waktu', s.pod.time)}<div class="signature">${escapeHtml(s.pod.proof)}</div></div>` : '<div class="empty-state">◌<br><strong>Belum tersedia</strong><p>POD simulasi muncul setelah pengiriman contoh diterima. Pilih pengiriman udara untuk melihat contohnya.</p></div>';
+  $('#pod').innerHTML = s.pod ? `<div class="pod-box"><span class="badge bc-badge">DITERIMA · SIMULASI</span>${detailRow('Penerima', s.pod.recipient)}${detailRow('Waktu', s.pod.time)}<div class="signature">${escapeHtml(s.pod.proof)}</div></div>` : '<div class="empty-state">◌<br><strong>Belum tersedia</strong><p>POD simulasi muncul setelah pengiriman contoh diterima. Pilih pengiriman udara untuk melihat contohnya.</p></div>';
   $('#invoice').innerHTML = `<div class="invoice-box">${detailRow('Base freight', money(s.invoice.base))}${detailRow('Local charges', money(s.invoice.local))}${detailRow('Total estimasi', money(s.invoice.base + s.invoice.local))}<div class="invoice-status">${escapeHtml(s.invoice.status)}</div></div>`;
   $('#claim-result').textContent = '';
   updateMap(s);
 }
 function updateMap(s) {
   if (!mapReady || !map) return;
+  // MapLibre needs resolved colours, not CSS custom-property references.
+  const tokens = getComputedStyle(document.documentElement);
+  const routeColour = tokens.getPropertyValue('--brand-primary').trim();
+  const plannedColour = tokens.getPropertyValue('--brand-muted-foreground').trim();
   markers.forEach((marker) => marker.remove()); markers = [];
   const coordinates = [];
   s.events.forEach((event) => {
@@ -91,13 +95,13 @@ function updateMap(s) {
     }
     coordinates.push(coord);
     const popup = new maplibregl.Popup({ offset: 16 }).setText(`${event.title} · ${event.place} · ${event.time} (simulasi)`);
-    markers.push(new maplibregl.Marker({ color: event.planned ? '#9ba9a4' : '#087b65' }).setLngLat(coord).setPopup(popup).addTo(map));
+    markers.push(new maplibregl.Marker({ color: event.planned ? plannedColour : routeColour }).setLngLat(coord).setPopup(popup).addTo(map));
   });
   const geojson = { type: 'Feature', geometry: { type: 'LineString', coordinates }, properties: {} };
   if (map.getSource('route')) map.getSource('route').setData(geojson);
   else {
     map.addSource('route', { type: 'geojson', data: geojson });
-    map.addLayer({ id: 'route', type: 'line', source: 'route', paint: { 'line-color': '#087b65', 'line-width': 3, 'line-dasharray': [2, 2] } });
+    map.addLayer({ id: 'route', type: 'line', source: 'route', paint: { 'line-color': routeColour, 'line-width': 3, 'line-dasharray': [2, 2] } });
   }
   const bounds = coordinates.reduce((b, coord) => b.extend(coord), new maplibregl.LngLatBounds(coordinates[0], coordinates[0]));
   map.fitBounds(bounds, { padding: 55, maxZoom: 5, duration: 0 });

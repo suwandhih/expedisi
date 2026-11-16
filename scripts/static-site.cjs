@@ -7,6 +7,7 @@ const path = require('node:path');
 const { Script } = require('node:vm');
 const checkCalculator = require('./kalkulator-tests.cjs');
 const checkQuotation = require('./penawaran-tests.cjs');
+const checkBrand = require('./brand-tests.cjs');
 
 const root = path.resolve(__dirname, '..');
 const output = path.join(root, 'dist');
@@ -182,6 +183,7 @@ function check() {
   }
   checkCalculator(sources, sandbox);
   checkQuotation(sources, sandbox);
+  checkBrand(sources);
   const pageCount = files.filter((file) => file.endsWith('.html')).length;
   const scriptCount = files.filter((file) => file.endsWith('.js')).length;
   console.log(`OK: ${pageCount} halaman HTML, ${scriptCount} skrip JavaScript, ${references} referensi lokal, ${data.shipments.length} pengiriman contoh; navigasi situs tersedia.`);

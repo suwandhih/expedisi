@@ -199,7 +199,7 @@ module.exports = function checkQuotation(sources, sandbox) {
   assert.match(sources.get('raja-kirim/surat.html'), /<nav class="bc-nav"/);
   assert.match(sources.get('raja-kirim/surat.html'), /class="card document-preview bc-card"/);
   const printSource = surat.slice(surat.indexOf('function exportPDF('), surat.indexOf('function exportPNG('));
-  assert.match(printSource, /@media print\{body\{margin:0;padding:0\}\}/);
+  assert.match(printSource, /@media print\{body\{margin:0;padding:0\}header,small,mark\{color:inherit\}mark\{background:transparent\}\}/);
   assert.match(printSource, /body\.append\(content\.cloneNode\(true\)\)/);
   assert.match(printSource, /printWindow\.print\(\)/);
   console.log(`OK penawaran: ${cases} payload negara × arah × moda; batas/korupsi/kuota/storage-denied, navigasi setelah simpan, beberapa pelanggan tanpa mutasi, receipt tidak berubah, reset/banner, hash Dokumen, dan sanitizer teks.`);

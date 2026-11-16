@@ -29,13 +29,19 @@ Payload rusak diabaikan dan dihapus dengan pesan berbahasa Indonesia. Jika penyi
 
 ## Shared Bright Cargo styles
 
-All five pages load the generated [design tokens](src/styles/design-tokens.css), then the editable [brand foundation](src/styles/brand.css), before their own stylesheets. The static build allowlists 18 public files, including both shared stylesheets under `dist/src/styles/`. Do not edit the generated tokens or introduce a framework for this static site.
+All five pages load the generated [design tokens](src/styles/design-tokens.css), then the editable [brand foundation](src/styles/brand.css), before their own stylesheets. The static build allowlists **18 public files**, including both shared stylesheets under `dist/src/styles/`. Never edit the generated tokens, Tailwind preset or managed brand assets, and do not introduce a framework for this static site.
 
-Use the shared `bc-` classes for skip links, headers/navigation, buttons, cards, badges, alerts, labels/selects and radio tiles; page CSS owns page-specific layout. Colours, fonts and corner radii come from the design tokens. Radio tiles use a label containing a visually hidden radio input immediately followed by a span, retaining native keyboard interaction. Nunito and Montserrat are loaded from Google Fonts; the token font stacks provide offline fallbacks. This foundation step does not change page layouts or behaviour.
+The completed look uses one set of `bc-` primitives for skip links, headers/pill navigation, buttons, cards, badges, alerts, labels/controls and radio tiles, including actions rendered by JavaScript. Page CSS keeps layout and intentional theme/print differences, not duplicate primitives. Colours, fonts and corner radii come from the tokens; tints and shadows use `color-mix()`, with no literal hex/rgb colours in application CSS or JavaScript. Nunito and Montserrat load from Google Fonts with token system fallbacks.
+
+Perbandingan harga follows Design C: a violet-to-tangerine hero, an overlapping planner with native Ekspor/Impor radio tiles, raised comparison cards and a soft tangerine quotation card. The calculator, documents, home selector and Lintas Samudra keep their section order, content and behaviour. The layout rules cover 1280px desktop and 390px phone widths; cards/fields stack and the wide calculator table, document tabs and Lintas nav scroll inside their own regions. Lintas dark mode uses token-derived aliases. The existing native booking `<dialog>` remains under the agreed no-framework exception; the design checker’s shadcn recommendation is advisory, not a missing feature.
+
+Map markers/routes, editor highlighting and PNG exports resolve token values for native APIs. PDF print windows copy token values and fonts locally, so they do not rely on another stylesheet request; printed headings/highlights remain readable without background printing. Radio tiles retain the native label/radio/span structure and keyboard interaction.
+
+`npm run check` and `npm run build` run the calculator/quotation regressions plus [Bright Cargo unit checks](scripts/brand-tests.cjs) for token-only styling, shared actions, comparison controls, resolved map colours, PDF/PNG styling and export errors. The 18-file public allowlist remains in [the build script](scripts/static-site.cjs); internal docs and test files are never copied into `dist/`. These are source checks and Node/VM tests, not browser rendering tests. Visual appearance, real browser interactions and external map/font availability were not browser-verified while Live Test was off.
 
 ## Menjalankan
 
-Sajikan direktori ini dengan server HTTP statis dan buka alamat server tersebut. Misalnya `npx serve .` jika tersedia. Jangan membuka `index.html` langsung melalui `file://`, karena pemuatan `data.json` memerlukan HTTP. Semua path aplikasi bersifat relatif sehingga dapat dilayani dari subpath GitHub Pages tanpa konfigurasi build. Tidak perlu akun atau API key.
+Install the pinned tooling with `npm ci`, run `npm run build`, then serve only `dist/` with a static HTTP server (for example, `npx serve dist`). Jangan membuka `index.html` langsung melalui `file://`, karena pemuatan `data.json` memerlukan HTTP. Semua path aplikasi bersifat relatif sehingga dapat dilayani dari subpath GitHub Pages tanpa konfigurasi build. Tidak perlu akun atau API key.
 
 ### Preview di Software Foundry
 

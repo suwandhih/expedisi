@@ -10,21 +10,19 @@
   --muted: var(--brand-muted-foreground);
   --line: var(--brand-border);
 }
-* { box-sizing: border-box; }
 body { margin: 0; background: var(--brand-muted); }
 button, input, select, textarea { font: inherit; }
 button { cursor: pointer; }
 button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible, [contenteditable]:focus-visible { outline: 3px solid var(--brand-primary); outline-offset: 3px; }
 [hidden] { display: none !important; }
 h1, h2, h3, h4, p { margin: 0; }
-h1, h2, h3, h4 { font-family: var(--font-display); }
-.site-header { display: block; padding: 0; background: var(--brand-white); border-bottom: 1px solid var(--line); }
+.site-header { display: block; padding: 0; }
 .header-inner { max-width: 1360px; min-height: 84px; margin: auto; padding: 16px 40px; display: flex; flex-wrap: wrap; align-items: center; gap: 24px; }
 .brand { display: flex; align-items: center; gap: 11px; color: var(--navy); text-decoration: none; font-family: var(--font-display); font-size: 20px; font-weight: 800; letter-spacing: -.05em; line-height: 1; white-space: nowrap; }
 .brand > span:last-child > span { color: var(--blue); }
 .brand small { display: block; margin-top: 6px; color: var(--muted); font-family: var(--font-sans); font-size: 9px; font-weight: 700; letter-spacing: .12em; }
 .brand-mark { display: grid; place-items: center; width: 40px; height: 40px; color: var(--brand-primary-foreground); background: var(--blue); border-radius: var(--radius-full); font-size: 24px; }
-.header-inner nav { display: flex; flex: 1; flex-wrap: wrap; min-width: 0; align-self: stretch; align-items: center; gap: 6px; }
+.header-inner nav { flex: 1; align-self: stretch; }
 .header-inner nav a { font-size: 14px; white-space: nowrap; }
 .demo-pill, .soft-badge { font-size: 11px; font-weight: 750; letter-spacing: .02em; padding: 8px 11px; white-space: nowrap; }
 .demo-pill { margin-left: auto; }
@@ -42,7 +40,6 @@ h4 { font-size: 15px; }
 .intro-icon strong { color: var(--lime); align-self: flex-end; font-size: 56px; font-weight: 400; line-height: .8; }
 .notice { display: flex; gap: 12px; margin: 36px 0 34px; padding: 16px 19px; font-size: 13px; line-height: 1.55; }
 .notice > span { color: var(--blue); font-size: 19px; line-height: 1; }
-.notice strong { color: var(--brand-secondary-foreground); }
 .tabs { display: flex; gap: 8px; margin-bottom: 38px; border-bottom: 1px solid var(--line); }
 .tab { padding: 15px 19px; border: 0; border-bottom: 3px solid transparent; border-radius: var(--radius-full); background: transparent; color: var(--muted); font-size: 14px; font-weight: 700; }
 .tab:hover { background: var(--brand-muted); color: var(--navy); }
@@ -64,7 +61,7 @@ h4 { font-size: 15px; }
 .customer-info dt { font-weight: 700; }
 .customer-info dd { margin: 0; white-space: pre-wrap; }
 .customer-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0 14px; }
-.card { min-width: 0; padding: 26px; }
+.card { padding: 26px; }
 .card-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; margin-bottom: 25px; }
 .card-icon { display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: var(--radius-sm); background: var(--navy); color: var(--lime); font-size: 20px; }
 .count { padding: 6px 10px; font-size: 12px; font-weight: 750; }
@@ -92,13 +89,7 @@ input[type=checkbox], input[type=radio] { accent-color: var(--blue); }
 .radio-row { display: flex; gap: 22px; color: var(--navy); font-size: 13px; }
 .radio-row label { display: flex; align-items: center; gap: 6px; }
 .actions { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
-.button { min-height: 44px; padding: 11px 17px; font-size: 12px; font-weight: 750; }
-/* Legacy aliases for document/customer actions rendered by the unchanged surat.js. */
-.button:not(.bc-btn) { border: 1px solid var(--line); border-radius: var(--radius-full); }
-.button.primary:not(.bc-btn) { border-color: var(--blue); background: var(--blue); color: var(--brand-primary-foreground); }
-.button.primary:not(.bc-btn):hover { border-color: var(--brand-secondary-foreground); background: var(--brand-secondary-foreground); }
-.button.secondary:not(.bc-btn) { background: var(--brand-card); color: var(--brand-primary); }
-.button.secondary:not(.bc-btn):hover { border-color: var(--blue); background: var(--brand-secondary); }
+.button { padding: 11px 17px; font-size: 12px; font-weight: 750; }
 .status { margin-top: 10px; color: var(--brand-secondary-foreground); font-size: 12px; line-height: 1.5; }
 .status.error { color: var(--brand-destructive); }
 .filter-row { display: flex; gap: 6px; margin: 16px 0; border-bottom: 1px solid var(--line); }

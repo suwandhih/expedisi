@@ -31,7 +31,7 @@
 #mode-hint { margin: 16px 0; }
 #form-status { margin-top: 12px; }
 .settings-panel { margin-top: 18px; padding: 24px 30px; }
-.settings-panel > summary { cursor: pointer; color: var(--brand-foreground); font-weight: 750; font-size: 16px; }
+.settings-panel > summary { cursor: pointer; font-weight: 750; font-size: 16px; }
 .settings-panel > summary .hint { display: block; margin: 5px 0 0 18px; font-weight: 400; }
 .settings-panel > p { margin: 18px 0; }
 .global-fields { grid-template-columns: repeat(3, minmax(0, 1fr)); margin: 22px 0; }
@@ -48,16 +48,12 @@
 #settings-status[data-state="error"] { color: var(--brand-destructive); }
 #results-status { font-size: 13px; color: var(--brand-muted-foreground); }
 .calculator-page .offers { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-.calculator-page .offer { min-width: 0; }
 .calculator-page .offer-heading { align-items: flex-start; flex-wrap: wrap; }
 .calculator-page .offer-heading h3 { font-size: 17px; }
-.calculator-page .offer-heading p { color: var(--brand-muted-foreground); }
 .calculator-page .offer-data { display: block; margin: 22px 0 14px; }
-.calculator-page .offer-data span { color: var(--brand-muted-foreground); }
 .calculator-page .offer-data .price { font-size: 26px; overflow-wrap: anywhere; font-variant-numeric: tabular-nums; }
 .idr-estimate { margin: 3px 0 12px; font-size: 13px; color: var(--brand-muted-foreground); overflow-wrap: anywhere; }
 .cost-difference { font-size: 12px; color: var(--brand-muted-foreground); margin: 0 0 18px; overflow-wrap: anywhere; }
-.calculator-page .offer details { font-size: 12px; color: var(--brand-muted-foreground); }
 .offer-actions { display: flex; margin-top: 20px; }
 .offer-actions .button { width: 100%; white-space: normal; }
 .cost-breakdown { margin: 12px 0 0; }

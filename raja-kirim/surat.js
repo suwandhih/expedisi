@@ -19,6 +19,10 @@ const history = [
   { customer: 'ayu', direction: 'outgoing', channel: 'WhatsApp', subject: 'Jadwal pengiriman', body: 'Paket dijadwalkan dikirim besok.', date: '16 Nov 2026' }
 ];
 const $ = id => document.getElementById(id);
+// Native editing, canvas and standalone print windows need resolved token values.
+function brandValue(name) {
+  return getComputedStyle(document.documentElement).getPropertyValue(`--${name}`).trim();
+}
 const storageKey = 'raja-kirim-surat-v1';
 const contactFields = ['alamat', 'email1', 'email2', 'phone1', 'phone2'];
 const sampleContacts = {
@@ -122,7 +126,7 @@ document.querySelectorAll('.toolbar').forEach(toolbar => {
     button.addEventListener('mousedown', event => event.preventDefault());
     button.addEventListener('click', () => {
       editor.focus();
-      document.execCommand(command, false, command === 'hiliteColor' ? '#fff09a' : null);
+      document.execCommand(command, false, command === 'hiliteColor' ? brandValue('brand-accent') : null);
       editor.dispatchEvent(new Event('input', { bubbles: true }));
     });
     toolbar.append(button);
@@ -241,7 +245,7 @@ function renderCustomerDetail() {
   if (!customer) return;
   const heading = document.createElement('div'); heading.className = 'customer-detail-heading';
   const name = document.createElement('h4'); name.textContent = `${customer.nama} · ${customer.perusahaan}`;
-  const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'button secondary'; edit.textContent = 'Edit pelanggan';
+  const edit = document.createElement('button'); edit.type = 'button'; edit.className = 'button secondary bc-btn bc-btn--outline'; edit.textContent = 'Edit pelanggan';
   edit.addEventListener('click', () => {
     editingCustomerId = customer.id;
     Object.entries(customerInputs).forEach(([field, id]) => { $(id).value = customer[field] || ''; });
@@ -328,7 +332,7 @@ function renderDocuments() {
     const values = quotation.replacements(customer, quotationPayload, currentType);
     const content = document.createElement('div'); content.className = 'rich-content'; content.append(sanitized($('template-editor'), values));
     const actions = document.createElement('div'); actions.className = 'sheet-actions';
-    const button = document.createElement('button'); button.type = 'button'; button.className = 'button secondary';
+    const button = document.createElement('button'); button.type = 'button'; button.className = 'button secondary bc-btn bc-btn--outline';
     button.textContent = currentType === 'quotation' ? 'Cetak / simpan PDF' : 'Unduh PNG';
     button.setAttribute('aria-label', `${button.textContent} untuk ${customer.nama}`);
     button.addEventListener('click', () => currentType === 'quotation' ? exportPDF(customer, content) : exportPNG(customer, content));
@@ -358,8 +362,12 @@ function exportPDF(customer, content) {
   if (!printWindow) { setStatus($('doc-status'), 'Jendela cetak diblokir. Izinkan pop-up untuk menyimpan PDF.', true); return; }
   const doc = printWindow.document;
   doc.title = `Quotation ${customer.nama} - Simulasi`;
+  // Snapshot the managed tokens so this separate document works without a network load.
+  for (const name of ['brand-foreground', 'brand-white', 'brand-primary', 'brand-muted-foreground', 'brand-accent', 'brand-accent-foreground', 'font-sans', 'font-display']) {
+    doc.documentElement.style.setProperty(`--${name}`, brandValue(name));
+  }
   const style = doc.createElement('style');
-  style.textContent = 'body{font-family:Arial,sans-serif;color:#20352f;max-width:720px;margin:48px auto;padding:0 24px;line-height:1.6}header{color:#137c68;border-bottom:2px solid #137c68;padding-bottom:18px;margin-bottom:25px;font-weight:bold}small{display:block;color:#666;margin-top:6px}p{margin:0 0 14px}mark{background:#fff09a}@media print{body{margin:0;padding:0}}';
+  style.textContent = 'body{font-family:var(--font-sans);color:var(--brand-foreground);background:var(--brand-white);max-width:720px;margin:48px auto;padding:0 24px;line-height:1.6}header{font-family:var(--font-display);color:var(--brand-primary);border-bottom:2px solid currentColor;padding-bottom:18px;margin-bottom:25px;font-weight:bold}small{display:block;font-family:var(--font-sans);color:var(--brand-muted-foreground);margin-top:6px}p{margin:0 0 14px}mark{background:var(--brand-accent);color:var(--brand-accent-foreground)}@media print{body{margin:0;padding:0}header,small,mark{color:inherit}mark{background:transparent}}';
   doc.head.append(style);
   const header = doc.createElement('header'); header.textContent = 'RAJA KIRIM · QUOTATION';
   const note = doc.createElement('small'); note.textContent = 'DOKUMEN SIMULASI — BUKAN TRANSAKSI SEBENARNYA'; header.append(note);
@@ -373,7 +381,9 @@ function exportPNG(customer, content) {
   const context = canvas.getContext('2d');
   if (!context) { setStatus($('doc-status'), 'Gagal membuat gambar di browser ini.', true); return; }
   const width = 1000, margin = 70, lineHeight = 34;
-  context.font = '22px Arial';
+  const bodyFont = brandValue('font-sans');
+  const displayFont = brandValue('font-display');
+  context.font = `22px ${bodyFont}`;
   // innerText preserves visible line breaks from paragraphs and lists.
   const paragraphs = (content.innerText || content.textContent).replace(/\r/g, '').split('\n');
   const lines = [];
@@ -394,11 +404,11 @@ function exportPNG(customer, content) {
     lines.push(line);
   });
   canvas.width = width; canvas.height = Math.max(420, 220 + lines.length * lineHeight);
-  context.fillStyle = '#ffffff'; context.fillRect(0, 0, canvas.width, canvas.height);
-  context.fillStyle = '#137c68'; context.font = 'bold 30px Arial'; context.fillText('RAJA KIRIM · TANDA TERIMA', margin, 70);
-  context.font = '16px Arial'; context.fillText('DOKUMEN SIMULASI — BUKAN BUKTI PEMBAYARAN SAH', margin, 105);
+  context.fillStyle = brandValue('brand-white'); context.fillRect(0, 0, canvas.width, canvas.height);
+  context.fillStyle = brandValue('brand-primary'); context.font = `bold 30px ${displayFont}`; context.fillText('RAJA KIRIM · TANDA TERIMA', margin, 70);
+  context.font = `16px ${bodyFont}`; context.fillText('DOKUMEN SIMULASI — BUKAN BUKTI PEMBAYARAN SAH', margin, 105);
   context.fillRect(margin, 128, width - margin * 2, 2);
-  context.fillStyle = '#20352f'; context.font = '22px Arial';
+  context.fillStyle = brandValue('brand-foreground'); context.font = `22px ${bodyFont}`;
   lines.forEach((line, index) => context.fillText(line, margin, 180 + index * lineHeight));
   try {
     const link = document.createElement('a'); link.download = `tanda-terima-${customer.id}-simulasi.png`; link.href = canvas.toDataURL('image/png'); link.click();
