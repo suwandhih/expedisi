@@ -189,5 +189,18 @@ module.exports = function checkQuotation(sources, sandbox) {
   assert.match(sources.get('raja-kirim/kalkulator.js'), /RajaKirimPenawaran\.handoff\(result\)/);
   assert.match(sources.get('raja-kirim/surat.html'), /id="quotation-source"[^>]*role="status"/);
   assert.match(sources.get('raja-kirim/surat.html'), /\{\{rincian\}\}/);
+  const documentStyles = sources.get('raja-kirim/surat.css');
+  assert.doesNotMatch(documentStyles, /#[\da-f]{3,8}\b|rgba?\(/i, 'Surat memakai warna token, bukan literal');
+  assert.doesNotMatch(documentStyles, /border-radius:\s*[\d.]/, 'Radius surat memakai token bersama');
+  assert.match(documentStyles, /font-family: var\(--font-sans\)/);
+  assert.match(documentStyles, /font-family: var\(--font-display\)/);
+  assert.match(documentStyles, /outline: 3px solid var\(--brand-primary\)/);
+  assert.match(documentStyles, /\.status\.error\s*\{\s*color: var\(--brand-destructive\)/);
+  assert.match(sources.get('raja-kirim/surat.html'), /<nav class="bc-nav"/);
+  assert.match(sources.get('raja-kirim/surat.html'), /class="card document-preview bc-card"/);
+  const printSource = surat.slice(surat.indexOf('function exportPDF('), surat.indexOf('function exportPNG('));
+  assert.match(printSource, /@media print\{body\{margin:0;padding:0\}\}/);
+  assert.match(printSource, /body\.append\(content\.cloneNode\(true\)\)/);
+  assert.match(printSource, /printWindow\.print\(\)/);
   console.log(`OK penawaran: ${cases} payload negara × arah × moda; batas/korupsi/kuota/storage-denied, navigasi setelah simpan, beberapa pelanggan tanpa mutasi, receipt tidak berubah, reset/banner, hash Dokumen, dan sanitizer teks.`);
 };
