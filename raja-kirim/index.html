@@ -12,28 +12,75 @@
   <script defer src="tarif-contoh.js"></script>
   <script defer src="harga.js"></script>
 </head>
-<body>
-  <a class="skip" href="#konten">Langsung ke konten</a>
-  <header class="header">
+<body class="comparison-page">
+  <a class="bc-skip" href="#konten">Langsung ke konten</a>
+  <header class="header bc-header">
     <div class="header-inner">
-      <a href="index.html" class="brand"><span class="brand-icon">↗</span><span>raja<span>kirim</span><small>SIMULASI EKSPEDISI</small></span></a>
-      <nav aria-label="Navigasi utama"><a class="active" aria-current="page" href="index.html">Perbandingan harga</a><a href="kalkulator.html">Kalkulator negara</a><a href="surat.html#pelanggan">Pelanggan</a><a href="surat.html">Surat &amp; dokumen</a></nav>
-      <a class="old-demo" href="../lintas-samudra/index.html">Lintas Samudra ↗</a>
+      <a href="index.html" class="brand"><span class="brand-icon" aria-hidden="true">↗</span><span>raja<span>kirim</span><small>SIMULASI EKSPEDISI</small></span></a>
+      <nav class="bc-nav" aria-label="Navigasi utama">
+        <a class="active" aria-current="page" href="index.html">Perbandingan harga</a>
+        <a href="kalkulator.html">Kalkulator negara</a>
+        <a href="surat.html#pelanggan">Pelanggan</a>
+        <a href="surat.html">Surat &amp; dokumen</a>
+      </nav>
+      <a class="old-demo bc-btn bc-btn--outline bc-btn--sm" href="../lintas-samudra/index.html">Lintas Samudra ↗</a>
     </div>
   </header>
-  <main id="konten" class="shell">
-    <div class="notice"><span>ⓘ</span><p><strong>Mode demo.</strong> Semua harga dan data adalah contoh. Tidak ada layanan yang terhubung atau pesan yang benar-benar dikirim.</p></div>
-    <section class="intro"><div class="intro-copy"><div class="eyebrow"><span class="intro-dot"></span> EKSPOR &amp; IMPOR / LEBIH SEDERHANA</div><h1>Pengiriman<br>lebih <span>pasti.</span></h1><p>Bandingkan alternatif harga ekspor dan impor, lalu siapkan penawaran pelanggan di satu tempat.</p><a class="intro-link" href="#form-title">Mulai bandingkan <span>↘</span></a></div><div class="intro-card" aria-hidden="true"><div class="graphic-top"><span>RAJA KIRIM / GLOBAL</span><span>01 — 03</span></div><div class="graphic-orbit orbit-one"></div><div class="graphic-orbit orbit-two"></div><div class="graphic-route"></div><span class="graphic-point point-one"></span><span class="graphic-point point-two"></span><span class="graphic-label label-one">JAKARTA <small>ID</small></span><span class="graphic-label label-two">GLOBAL <small>WORLDWIDE</small></span><div class="graphic-bottom"><span>BUILT FOR<br>BETTER MOVES.</span><span>↗</span></div></div></section>
-    <section class="search-card" aria-labelledby="form-title">
-      <div class="section-top"><div><div class="eyebrow">MULAI DI SINI</div><h2 id="form-title">Rencanakan pengiriman</h2><p>Pilih jenis pengiriman, rute, dan moda untuk membandingkan tarif contoh.</p></div><span class="badge">DATA SIMULASI</span></div>
+  <main id="konten" class="shell" tabindex="-1">
+    <div class="notice bc-alert"><span aria-hidden="true">ⓘ</span><p><strong>Mode demo.</strong> Semua harga dan data adalah contoh. Tidak ada layanan yang terhubung atau pesan yang benar-benar dikirim.</p></div>
+    <section class="intro comparison-hero" aria-labelledby="hero-title">
+      <div class="intro-copy">
+        <div class="eyebrow bc-eyebrow">EKSPOR &amp; IMPOR / LEBIH SEDERHANA</div>
+        <h1 id="hero-title">Pengiriman lebih pasti.</h1>
+        <p>Bandingkan alternatif harga ekspor dan impor, lalu siapkan penawaran pelanggan di satu tempat.</p>
+        <a class="intro-link bc-btn bc-btn--lg" href="#form-title">Mulai bandingkan ↘</a>
+      </div>
+      <div class="intro-card" aria-hidden="true">
+        <div class="graphic-top">RAJA KIRIM / GLOBAL</div>
+        <div class="graphic-orbit orbit-one"></div>
+        <div class="graphic-orbit orbit-two"></div>
+        <div class="graphic-route"></div>
+        <span class="graphic-point point-one"></span><span class="graphic-point point-two"></span>
+        <span class="graphic-label label-one">JAKARTA <small>ID</small></span>
+        <span class="graphic-label label-two">GLOBAL <small>WORLDWIDE</small></span>
+        <div class="graphic-bottom"><span>BUILT FOR<br>BETTER MOVES.</span><span>↗</span></div>
+      </div>
+    </section>
+    <section class="search-card comparison-planner bc-card bc-card--raised" aria-labelledby="form-title">
+      <div class="section-top">
+        <div><div class="eyebrow bc-eyebrow">MULAI DI SINI</div><h2 id="form-title" tabindex="-1">Rencanakan pengiriman</h2><p>Pilih jenis pengiriman, rute, dan moda untuk membandingkan tarif contoh.</p></div>
+        <span class="bc-badge bc-badge--secondary">DATA SIMULASI</span>
+      </div>
       <form id="rate-form">
-        <fieldset class="direction"><legend>JENIS PENGIRIMAN</legend><label><input type="radio" name="direction" value="ekspor" checked> <span>↗ &nbsp; Ekspor <small>Dari Indonesia</small></span></label><label><input type="radio" name="direction" value="impor"> <span>↙ &nbsp; Impor <small>Ke Indonesia</small></span></label></fieldset>
-        <div class="fields"><label>NEGARA ASAL<select id="origin" aria-label="Negara asal"></select></label><span class="route-arrow" aria-hidden="true">→</span><label>NEGARA TUJUAN<select id="destination" aria-label="Negara tujuan"></select></label><label>MODA PENGIRIMAN<select id="mode"><option value="LCL">Laut · LCL</option><option value="FCL">Laut · FCL</option><option value="Udara">Udara</option></select></label><button class="button primary" type="submit">Bandingkan harga <span>→</span></button></div>
+        <fieldset class="direction">
+          <legend class="bc-label">JENIS PENGIRIMAN</legend>
+          <div class="bc-tiles">
+            <label class="bc-tile"><input type="radio" name="direction" value="ekspor" checked><span><b>↗ Ekspor</b><small>Dari Indonesia</small></span></label>
+            <label class="bc-tile"><input type="radio" name="direction" value="impor"><span><b>↙ Impor</b><small>Ke Indonesia</small></span></label>
+          </div>
+        </fieldset>
+        <div class="fields">
+          <div class="field"><label class="bc-label" for="origin">Negara asal</label><select class="bc-select" id="origin" aria-label="Negara asal"></select></div>
+          <span class="route-arrow" aria-hidden="true">→</span>
+          <div class="field"><label class="bc-label" for="destination">Negara tujuan</label><select class="bc-select" id="destination" aria-label="Negara tujuan"></select></div>
+          <div class="field"><label class="bc-label" for="mode">MODA PENGIRIMAN</label><select class="bc-select" id="mode"><option value="LCL">Laut · LCL</option><option value="FCL">Laut · FCL</option><option value="Udara">Udara</option></select></div>
+          <button class="bc-btn bc-btn--primary bc-btn--lg" type="submit">Bandingkan harga →</button>
+        </div>
       </form>
     </section>
-    <section class="results" aria-labelledby="results-title"><div class="results-top"><div><div class="eyebrow">PILIHAN UNTUK ANDA</div><h2 id="results-title">Alternatif pengiriman <span id="count" class="count"></span></h2><p id="summary"></p></div><span class="sort">↑ Diurutkan dari harga terendah</span></div><div id="offers" class="offers" aria-live="polite"></div><p class="results-note">ⓘ &nbsp; Harga dalam USD, termasuk biaya lokal contoh. Estimasi transit dan tarif bukan penawaran aktual.</p></section>
-    <section class="next"><div><div class="eyebrow">LANGKAH SELANJUTNYA</div><h2>Siapkan penawaran untuk pelanggan.</h2><p>Buat surat dan lihat contoh pengiriman email atau WhatsApp, semuanya dalam mode simulasi.</p></div><a class="button primary" href="surat.html">Buka surat &amp; dokumen <span>→</span></a></section>
+    <section class="results" aria-labelledby="results-title">
+      <div class="results-top">
+        <div><div class="eyebrow bc-eyebrow">PILIHAN UNTUK ANDA</div><h2 id="results-title">Alternatif pengiriman <span id="count" class="count bc-badge bc-badge--secondary"></span></h2><p id="summary"></p></div>
+        <span class="sort bc-muted">↑ Diurutkan dari harga terendah</span>
+      </div>
+      <div id="offers" class="offers" aria-live="polite"></div>
+      <p class="results-note bc-muted">ⓘ &nbsp; Harga dalam USD, termasuk biaya lokal contoh. Estimasi transit dan tarif bukan penawaran aktual.</p>
+    </section>
+    <section class="next" aria-labelledby="quote-title">
+      <div><div class="eyebrow bc-eyebrow">LANGKAH SELANJUTNYA</div><h2 id="quote-title">Siapkan penawaran untuk pelanggan.</h2><p>Buat surat dan lihat contoh pengiriman email atau WhatsApp, semuanya dalam mode simulasi.</p></div>
+      <a class="bc-btn bc-btn--accent bc-btn--lg" href="surat.html">Buka surat &amp; dokumen →</a>
+    </section>
   </main>
-  <footer class="shell"><a href="../index.html">← Pilihan halaman</a><span>© Raja Kirim · Demo ekspedisi</span><span>Hanya simulasi · Tidak terhubung ke layanan nyata</span></footer>
+  <footer class="shell"><a class="bc-btn bc-btn--ghost" href="../index.html">← Pilihan halaman</a><span>© Raja Kirim · Demo ekspedisi</span><span>Hanya simulasi · Tidak terhubung ke layanan nyata</span></footer>
 </body>
 </html>

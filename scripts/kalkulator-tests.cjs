@@ -52,10 +52,64 @@ module.exports = function checkCalculator(sources, sandbox) {
         assert.deepEqual(costs, legacyVendors.flatMap((vendor) => [money(base + vendor.adjustment), money(vendor.local)]));
         assert.equal(nodes.get('#count').textContent, '3 opsi');
         assert.equal(nodes.get('#summary').textContent, `${direction === 'ekspor' ? 'Ekspor' : 'Impor'} · ${nodes.get('#origin').value} → ${nodes.get('#destination').value} · ${mode === 'Udara' ? 'Udara' : 'Laut · ' + mode}`);
+        assert.equal((output.match(/<article class="offer bc-card bc-card--raised">/g) || []).length, 3);
+        assert.equal((output.match(/<details>\s*<summary>Rincian biaya<\/summary>/g) || []).length, 3);
+        assert.equal((output.match(/class="offer-route"/g) || []).length, 3);
+        const modeBadge = mode === 'Udara' ? 'accent' : mode === 'LCL' ? 'primary' : 'muted';
+        assert(output.includes(`bc-badge--${modeBadge}">${mode === 'Udara' ? 'Udara' : 'Laut · ' + mode}</span>`));
+        assert(output.includes('bc-badge--primary">Harga terendah</span>'));
+        assert(output.includes(`<p class="offer-route">${nodes.get('#origin').value} → ${nodes.get('#destination').value}</p>`));
         priceCases += 1;
       }
     }
   }
+
+  // Kontrak event tanpa browser: perubahan arah mengisi ulang pilihan;
+  // submit memakai pilihan terbaru dan mencegah navigasi form.
+  const eventNodes = new Map();
+  for (const selector of ['#origin', '#destination', '#mode', '#summary', '#count', '#offers', '#rate-form', '[name="direction"]:checked']) {
+    eventNodes.set(selector, { value: '', innerHTML: '', textContent: '', events: new Map(), addEventListener(event, handler) { this.events.set(event, handler); } });
+  }
+  for (const selector of ['#origin', '#destination']) {
+    const node = eventNodes.get(selector);
+    Object.defineProperty(node, 'innerHTML', {
+      get() { return this.markup || ''; },
+      set(markup) { this.markup = markup; this.value = markup.match(/<option>([^<]+)<\/option>/)?.[1] || ''; }
+    });
+  }
+  const radios = ['ekspor', 'impor'].map((value) => ({ value, events: new Map(), addEventListener(event, handler) { this.events.set(event, handler); } }));
+  eventNodes.get('[name="direction"]:checked').value = 'ekspor';
+  eventNodes.get('#mode').value = 'LCL';
+  new Script(sources.get('raja-kirim/harga.js')).runInNewContext({
+    window: { RajaKirimData: data },
+    document: { querySelector: (selector) => eventNodes.get(selector), querySelectorAll: () => radios }
+  }, { timeout: 1000 });
+  const originNode = eventNodes.get('#origin');
+  const destinationNode = eventNodes.get('#destination');
+  const countryOptions = countries.map((country) => `<option>${country}</option>`).join('');
+  assert.equal(originNode.innerHTML, '<option>Indonesia</option>');
+  assert.equal(destinationNode.innerHTML, countryOptions);
+  assert.equal(originNode.disabled, true);
+  assert.equal(destinationNode.disabled, false);
+  eventNodes.get('[name="direction"]:checked').value = 'impor';
+  radios[1].events.get('change')();
+  assert.equal(originNode.innerHTML, countryOptions);
+  assert.equal(destinationNode.innerHTML, '<option>Indonesia</option>');
+  assert.equal(originNode.disabled, false);
+  assert.equal(destinationNode.disabled, true);
+  originNode.value = 'Australia';
+  eventNodes.get('#mode').value = 'Udara';
+  let prevented = false;
+  eventNodes.get('#rate-form').events.get('submit')({ preventDefault() { prevented = true; } });
+  assert(prevented);
+  assert.equal(eventNodes.get('#summary').textContent, 'Impor · Australia → Indonesia · Udara');
+  assert(eventNodes.get('#offers').innerHTML.includes(`<strong class="price">${money(720 + 150 + 180)}</strong>`));
+  eventNodes.get('[name="direction"]:checked').value = 'ekspor';
+  radios[0].events.get('change')();
+  assert.equal(originNode.innerHTML, '<option>Indonesia</option>');
+  assert.equal(destinationNode.innerHTML, countryOptions);
+  assert.equal(originNode.disabled, true);
+  assert.equal(destinationNode.disabled, false);
 
   new Script(sources.get('raja-kirim/kalkulator.js'), { filename: 'kalkulator.js' }).runInNewContext(sandbox, { timeout: 1000 });
   const calculator = sandbox.window.RajaKirimKalkulator;

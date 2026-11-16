@@ -94,6 +94,30 @@ function check() {
   assert.match(home, /href="lintas-samudra\/index\.html"/, 'Pilihan halaman Lintas Samudra tidak tersedia');
   assert.match(lintas, /href="\.\.\/raja-kirim\/index\.html"/, 'Navigasi ke Raja Kirim tidak tersedia');
   assert.match(raja, /href="\.\.\/lintas-samudra\/index\.html"/, 'Navigasi ke Lintas Samudra tidak tersedia');
+  const comparisonSections = ['<header', 'Mode demo.', 'comparison-hero', 'comparison-planner', 'class="results"', 'class="next"', '<footer'];
+  let previousSection = -1;
+  for (const section of comparisonSections) {
+    const position = raja.indexOf(section);
+    assert(position > previousSection, `Perbandingan harga: urutan bagian tidak sesuai: ${section}`);
+    previousSection = position;
+  }
+  assert.match(raja, /href="#konten">Langsung ke konten<\/a>/);
+  assert.match(raja, /id="konten"[^>]*tabindex="-1"/, 'Target skip link harus dapat menerima fokus');
+  assert.match(raja, /href="#form-title">Mulai bandingkan ↘<\/a>/);
+  assert.match(raja, /id="form-title"[^>]*tabindex="-1"/);
+  assert.match(raja, /<div class="intro-card" aria-hidden="true">/);
+  assert.match(raja, /aria-current="page" href="index\.html"/);
+  assert.match(raja, /href="surat\.html#pelanggan"/);
+  assert.match(raja, /href="surat\.html">Buka surat &amp; dokumen →<\/a>/);
+  for (const [id, label] of [['origin', 'Negara asal'], ['destination', 'Negara tujuan'], ['mode', 'MODA PENGIRIMAN']]) {
+    assert(raja.includes(`for="${id}">${label}</label>`), `${id}: label kontrol harus dipertahankan`);
+  }
+  assert.match(raja, /name="direction" value="ekspor" checked/);
+  assert.match(raja, /name="direction" value="impor"/);
+  assert.match(raja, /id="offers"[^>]*aria-live="polite"/);
+  for (const file of ['raja-kirim/harga.css', 'raja-kirim/harga.js']) {
+    assert(!/#[\da-f]{3,8}\b|\brgba?\s*\(/i.test(sources.get(file)), `${file}: warna harus berasal dari token`);
+  }
   for (const file of ['lintas-samudra/index.html', 'raja-kirim/index.html', 'raja-kirim/surat.html', 'raja-kirim/kalkulator.html']) {
     assert.match(sources.get(file), /href="\.\.\/index\.html"/, `${file}: navigasi ke pilihan halaman tidak tersedia`);
   }
