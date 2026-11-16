@@ -60,9 +60,9 @@
           </div>
         </fieldset>
         <div class="fields">
-          <div class="field"><label class="bc-label" for="origin">Negara asal</label><select class="bc-select" id="origin" aria-label="Negara asal"></select></div>
+          <div class="field"><label class="bc-label" id="origin-label" for="origin">Negara asal</label><select class="bc-select" id="origin"></select></div>
           <span class="route-arrow" aria-hidden="true">→</span>
-          <div class="field"><label class="bc-label" for="destination">Negara tujuan</label><select class="bc-select" id="destination" aria-label="Negara tujuan"></select></div>
+          <div class="field"><label class="bc-label" id="destination-label" for="destination">Negara tujuan</label><select class="bc-select" id="destination"></select></div>
           <div class="field"><label class="bc-label" for="mode">MODA PENGIRIMAN</label><select class="bc-select" id="mode"><option value="LCL">Laut · LCL</option><option value="FCL">Laut · FCL</option><option value="Udara">Udara</option></select></div>
           <button class="bc-btn bc-btn--primary bc-btn--lg" type="submit">Bandingkan harga →</button>
         </div>
@@ -74,7 +74,7 @@
         <span class="sort bc-muted">↑ Diurutkan dari harga terendah</span>
       </div>
       <div id="offers" class="offers" aria-live="polite"></div>
-      <p class="results-note bc-muted">ⓘ &nbsp; Harga dalam USD, termasuk biaya lokal contoh. Estimasi transit dan tarif bukan penawaran aktual.</p>
+      <p id="results-note" class="results-note bc-muted">ⓘ &nbsp; Harga dalam USD, termasuk biaya lokal contoh. Estimasi transit dan tarif bukan penawaran aktual.</p>
     </section>
     <section class="next" aria-labelledby="quote-title">
       <div><div class="eyebrow bc-eyebrow">LANGKAH SELANJUTNYA</div><h2 id="quote-title">Siapkan penawaran untuk pelanggan.</h2><p>Buat surat dan lihat contoh pengiriman email atau WhatsApp, semuanya dalam mode simulasi.</p></div>

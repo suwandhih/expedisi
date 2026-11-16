@@ -24,7 +24,15 @@ module.exports = function checkBrand(sources) {
   }
   assert.match(raja, /<button\b[^>]*type="submit"[^>]*>Bandingkan harga →<\/button>/);
   assert.match(raja, /href="\.\.\/index\.html">← Pilihan halaman<\/a>/);
-  assert.match(sources.get('raja-kirim/harga.js'), /<details>[\s\S]*?<summary>Rincian biaya<\/summary>/);
+  for (const id of ['origin', 'destination']) {
+    assert.match(raja, new RegExp(`<label\\b[^>]*id="${id}-label"[^>]*for="${id}"`), `${id}: label dinamis harus terhubung ke select`);
+    const select = raja.match(new RegExp(`<select\\b[^>]*id="${id}"[^>]*>`))?.[0];
+    assert(select && !/aria-label=/.test(select), `${id}: nama aksesibel harus mengikuti label yang terlihat`);
+  }
+  assert.match(raja, /<p id="results-note" class="results-note bc-muted">/);
+  const prices = sources.get('raja-kirim/harga.js');
+  assert.match(prices, /<strong class="price">[\s\S]*?<\/strong><small class="price-idr bc-muted">≈ /, 'Perkiraan Rupiah harus kecil dan tepat di bawah harga USD');
+  assert.match(prices, /<details>[\s\S]*?<summary>Rincian biaya<\/summary>/);
 
   // Keep generated and static controls on the same shared primitives.
   for (const file of ['index.html', 'lintas-samudra/index.html', 'raja-kirim/index.html', 'raja-kirim/kalkulator.html', 'raja-kirim/surat.html', 'lintas-samudra/app.js', 'raja-kirim/surat.js']) {

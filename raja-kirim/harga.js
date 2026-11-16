@@ -2,15 +2,18 @@
 const origin = document.querySelector('#origin');
 const destination = document.querySelector('#destination');
 const mode = document.querySelector('#mode');
-const { countries, vendors, adjustments } = window.RajaKirimData;
+const { countries, vendors, adjustments, kurs } = window.RajaKirimData;
 const money = (amount) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
+const rupiah = (amount) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(amount);
 function setRoute() {
   const isExport = document.querySelector('[name="direction"]:checked').value === 'ekspor';
   const options = countries.map((country) => `<option>${country}</option>`).join('');
-  origin.innerHTML = isExport ? '<option>Indonesia</option>' : options;
-  destination.innerHTML = isExport ? options : '<option>Indonesia</option>';
+  origin.innerHTML = isExport ? '<option>Jakarta, Indonesia</option>' : options;
+  destination.innerHTML = isExport ? options : '<option>Jakarta, Indonesia</option>';
   origin.disabled = isExport;
   destination.disabled = !isExport;
+  document.querySelector('#origin-label').textContent = isExport ? 'Kota asal' : 'Negara asal';
+  document.querySelector('#destination-label').textContent = isExport ? 'Negara tujuan' : 'Kota tujuan';
 }
 function renderOffers() {
   const direction = document.querySelector('[name="direction"]:checked').value;
@@ -19,8 +22,10 @@ function renderOffers() {
   const base = (mode.value === 'FCL' ? 2100 : mode.value === 'Udara' ? 720 : 820) + adjustment;
   const days = (mode.value === 'Udara' ? 6 : mode.value === 'FCL' ? 25 : 28) + (country === 'Amerika Serikat' ? 5 : 0);
   const offers = vendors.map((vendor) => ({ ...vendor, freight: base + vendor.adjustment, total: base + vendor.adjustment + vendor.local, transit: Math.max(1, days + vendor.days) })).sort((a, b) => a.total - b.total);
-  document.querySelector('#summary').textContent = `${direction === 'ekspor' ? 'Ekspor' : 'Impor'} · ${origin.value} → ${destination.value} · ${mode.value === 'Udara' ? 'Udara' : 'Laut · ' + mode.value}`;
-  document.querySelector('#count').textContent = `${offers.length} opsi`;
+  const route = direction === 'ekspor' ? `Jakarta → ${country}` : `${country} → Jakarta`;
+  document.querySelector('#summary').textContent = `${direction === 'ekspor' ? 'Ekspor' : 'Impor'} · ${route} · ${mode.value === 'Udara' ? 'Udara' : 'Laut · ' + mode.value}`;
+  document.querySelector('#count').textContent = `${offers.length} alternatif ekspedisi`;
+  document.querySelector('#results-note').textContent = `ⓘ Harga dalam USD, termasuk biaya lokal contoh. Perkiraan Rupiah memakai kurs contoh ${rupiah(kurs)} per USD. Estimasi transit dan tarif bukan penawaran aktual.`;
   document.querySelector('#offers').innerHTML = offers.map((offer, index) => `
     <article class="offer bc-card bc-card--raised">
       <div class="offer-tags">
@@ -31,9 +36,9 @@ function renderOffers() {
         <div class="vendor-icon" aria-hidden="true">${offer.mark}</div>
         <div><h3>${mode.value === 'Udara' ? offer.air : offer.name}</h3><p>Vendor simulasi</p></div>
       </div>
-      <p class="offer-route">${origin.value} → ${destination.value}</p>
+      <p class="offer-route">${route}</p>
       <div class="offer-data">
-        <div><span>TOTAL ESTIMASI</span><strong class="price">${money(offer.total)}</strong></div>
+        <div><span>TOTAL ESTIMASI</span><strong class="price">${money(offer.total)}</strong><small class="price-idr bc-muted">≈ ${rupiah(offer.total * kurs)}</small></div>
         <div><span>ESTIMASI TRANSIT</span><strong>${offer.transit} hari</strong></div>
       </div>
       <details>

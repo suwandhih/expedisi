@@ -23,18 +23,20 @@ module.exports = function checkCalculator(sources, sandbox) {
   ];
   assert.deepEqual(copy(data.vendors), legacyVendors, 'Data vendor harus sama dengan baseline sebelum refactor');
 
-  // Stub terbatas untuk kontrak render harga lama, bukan simulasi browser.
+  // Stub terbatas untuk kontrak render perbandingan, bukan simulasi browser.
   const money = (value) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
+  const rupiah = (value) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value);
+  assert.equal(data.kurs, 16000, 'Kurs contoh harus tetap sama');
   let priceCases = 0;
   for (const direction of ['ekspor', 'impor']) {
     for (const mode of ['Udara', 'LCL', 'FCL']) {
       for (const country of countries) {
         const nodes = new Map();
-        for (const selector of ['#origin', '#destination', '#mode', '#summary', '#count', '#offers', '#rate-form', '[name="direction"]:checked']) {
+        for (const selector of ['#origin', '#destination', '#origin-label', '#destination-label', '#mode', '#summary', '#count', '#offers', '#results-note', '#rate-form', '[name="direction"]:checked']) {
           nodes.set(selector, { value: '', innerHTML: '', textContent: '', addEventListener() {} });
         }
-        nodes.get('#origin').value = direction === 'ekspor' ? 'Indonesia' : country;
-        nodes.get('#destination').value = direction === 'ekspor' ? country : 'Indonesia';
+        nodes.get('#origin').value = direction === 'ekspor' ? 'Jakarta, Indonesia' : country;
+        nodes.get('#destination').value = direction === 'ekspor' ? country : 'Jakarta, Indonesia';
         nodes.get('#mode').value = mode;
         nodes.get('[name="direction"]:checked').value = direction;
         const context = { window: { RajaKirimData: data }, document: { querySelector: (selector) => nodes.get(selector), querySelectorAll: () => [] } };
@@ -50,24 +52,33 @@ module.exports = function checkCalculator(sources, sandbox) {
         assert.deepEqual(days, legacyVendors.map((vendor) => transit + vendor.days));
         assert.deepEqual(names, legacyVendors.map((vendor) => mode === 'Udara' ? vendor.air : vendor.name));
         assert.deepEqual(costs, legacyVendors.flatMap((vendor) => [money(base + vendor.adjustment), money(vendor.local)]));
-        assert.equal(nodes.get('#count').textContent, '3 opsi');
-        assert.equal(nodes.get('#summary').textContent, `${direction === 'ekspor' ? 'Ekspor' : 'Impor'} · ${nodes.get('#origin').value} → ${nodes.get('#destination').value} · ${mode === 'Udara' ? 'Udara' : 'Laut · ' + mode}`);
+        const route = direction === 'ekspor' ? `Jakarta → ${country}` : `${country} → Jakarta`;
+        const estimates = [...output.matchAll(/<small class="price-idr bc-muted">([^<]+)<\/small>/g)].map((match) => match[1]);
+        assert.deepEqual(estimates, legacyVendors.map((vendor) => `≈ ${rupiah((base + vendor.adjustment + vendor.local) * 16000)}`));
+        const detailTotals = [...output.matchAll(/Total estimasi<\/span><strong>([^<]+)/g)].map((match) => match[1]);
+        assert.deepEqual(detailTotals, totals, 'Rincian total harus tetap dalam USD');
+        assert.equal(nodes.get('#count').textContent, '3 alternatif ekspedisi');
+        assert.equal(nodes.get('#summary').textContent, `${direction === 'ekspor' ? 'Ekspor' : 'Impor'} · ${route} · ${mode === 'Udara' ? 'Udara' : 'Laut · ' + mode}`);
+        assert.equal(nodes.get('#origin-label').textContent, direction === 'ekspor' ? 'Kota asal' : 'Negara asal');
+        assert.equal(nodes.get('#destination-label').textContent, direction === 'ekspor' ? 'Negara tujuan' : 'Kota tujuan');
+        assert.equal(nodes.get('#results-note').textContent, `ⓘ Harga dalam USD, termasuk biaya lokal contoh. Perkiraan Rupiah memakai kurs contoh ${rupiah(16000)} per USD. Estimasi transit dan tarif bukan penawaran aktual.`);
         assert.equal((output.match(/<article class="offer bc-card bc-card--raised">/g) || []).length, 3);
         assert.equal((output.match(/<details>\s*<summary>Rincian biaya<\/summary>/g) || []).length, 3);
         assert.equal((output.match(/class="offer-route"/g) || []).length, 3);
         const modeBadge = mode === 'Udara' ? 'accent' : mode === 'LCL' ? 'primary' : 'muted';
         assert(output.includes(`bc-badge--${modeBadge}">${mode === 'Udara' ? 'Udara' : 'Laut · ' + mode}</span>`));
         assert(output.includes('bc-badge--primary">Harga terendah</span>'));
-        assert(output.includes(`<p class="offer-route">${nodes.get('#origin').value} → ${nodes.get('#destination').value}</p>`));
+        assert.equal([...output.matchAll(/<p class="offer-route">([^<]+)<\/p>/g)].filter((match) => match[1] === route).length, 3, 'Semua kartu harus memakai rute yang sama');
         priceCases += 1;
       }
     }
   }
+  assert.equal(priceCases, 36, 'Semua kombinasi arah, negara dan moda harus diuji');
 
   // Kontrak event tanpa browser: perubahan arah mengisi ulang pilihan;
   // submit memakai pilihan terbaru dan mencegah navigasi form.
   const eventNodes = new Map();
-  for (const selector of ['#origin', '#destination', '#mode', '#summary', '#count', '#offers', '#rate-form', '[name="direction"]:checked']) {
+  for (const selector of ['#origin', '#destination', '#origin-label', '#destination-label', '#mode', '#summary', '#count', '#offers', '#results-note', '#rate-form', '[name="direction"]:checked']) {
     eventNodes.set(selector, { value: '', innerHTML: '', textContent: '', events: new Map(), addEventListener(event, handler) { this.events.set(event, handler); } });
   }
   for (const selector of ['#origin', '#destination']) {
@@ -87,29 +98,45 @@ module.exports = function checkCalculator(sources, sandbox) {
   const originNode = eventNodes.get('#origin');
   const destinationNode = eventNodes.get('#destination');
   const countryOptions = countries.map((country) => `<option>${country}</option>`).join('');
-  assert.equal(originNode.innerHTML, '<option>Indonesia</option>');
+  assert.equal(originNode.innerHTML, '<option>Jakarta, Indonesia</option>');
   assert.equal(destinationNode.innerHTML, countryOptions);
   assert.equal(originNode.disabled, true);
   assert.equal(destinationNode.disabled, false);
+  assert.equal(eventNodes.get('#origin-label').textContent, 'Kota asal');
+  assert.equal(eventNodes.get('#destination-label').textContent, 'Negara tujuan');
   eventNodes.get('[name="direction"]:checked').value = 'impor';
   radios[1].events.get('change')();
   assert.equal(originNode.innerHTML, countryOptions);
-  assert.equal(destinationNode.innerHTML, '<option>Indonesia</option>');
+  assert.equal(destinationNode.innerHTML, '<option>Jakarta, Indonesia</option>');
   assert.equal(originNode.disabled, false);
   assert.equal(destinationNode.disabled, true);
+  assert.equal(eventNodes.get('#origin-label').textContent, 'Negara asal');
+  assert.equal(eventNodes.get('#destination-label').textContent, 'Kota tujuan');
+  originNode.value = 'Malaysia';
+  let malaysiaPrevented = false;
+  eventNodes.get('#rate-form').events.get('submit')({ preventDefault() { malaysiaPrevented = true; } });
+  assert(malaysiaPrevented);
+  assert.equal(eventNodes.get('#summary').textContent, 'Impor · Malaysia → Jakarta · Laut · LCL');
+  assert.equal(eventNodes.get('#count').textContent, '3 alternatif ekspedisi');
+  const malaysiaOutput = eventNodes.get('#offers').innerHTML;
+  assert.equal((malaysiaOutput.match(/<p class="offer-route">Malaysia → Jakarta<\/p>/g) || []).length, 3);
+  assert.deepEqual([...malaysiaOutput.matchAll(/class="price">([^<]+)/g)].map((match) => match[1]), [1035, 1195, 1360].map(money));
+  assert.deepEqual([...malaysiaOutput.matchAll(/<small class="price-idr bc-muted">([^<]+)<\/small>/g)].map((match) => match[1]), [1035, 1195, 1360].map((total) => `≈ ${rupiah(total * 16000)}`));
   originNode.value = 'Australia';
   eventNodes.get('#mode').value = 'Udara';
   let prevented = false;
   eventNodes.get('#rate-form').events.get('submit')({ preventDefault() { prevented = true; } });
   assert(prevented);
-  assert.equal(eventNodes.get('#summary').textContent, 'Impor · Australia → Indonesia · Udara');
+  assert.equal(eventNodes.get('#summary').textContent, 'Impor · Australia → Jakarta · Udara');
   assert(eventNodes.get('#offers').innerHTML.includes(`<strong class="price">${money(720 + 150 + 180)}</strong>`));
   eventNodes.get('[name="direction"]:checked').value = 'ekspor';
   radios[0].events.get('change')();
-  assert.equal(originNode.innerHTML, '<option>Indonesia</option>');
+  assert.equal(originNode.innerHTML, '<option>Jakarta, Indonesia</option>');
   assert.equal(destinationNode.innerHTML, countryOptions);
   assert.equal(originNode.disabled, true);
   assert.equal(destinationNode.disabled, false);
+  assert.equal(eventNodes.get('#origin-label').textContent, 'Kota asal');
+  assert.equal(eventNodes.get('#destination-label').textContent, 'Negara tujuan');
 
   new Script(sources.get('raja-kirim/kalkulator.js'), { filename: 'kalkulator.js' }).runInNewContext(sandbox, { timeout: 1000 });
   const calculator = sandbox.window.RajaKirimKalkulator;
