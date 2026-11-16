@@ -17,9 +17,10 @@ This file is the primary instruction document the AI agent reads on every turn. 
 
 ## Conventions
 - Konfigurasi runtime ada di `.cdf/runtime.json`; lifecycle standar npm (`dev`, `check`, `build`) ada di `package.json`. `PORT` disediakan platform; jangan tentukan port tetap.
-- Pemeriksaan: `node scripts/static-site.cjs check`. Build statis: `node scripts/static-site.cjs build`.
+- Pemeriksaan: `node scripts/static-site.cjs check`. Build statis: `node scripts/static-site.cjs build`. Pemeriksaan menjalankan `scripts/kalkulator-tests.cjs` (unit Node/VM tanpa browser) untuk rumus, validasi, penyimpanan, dan regresi 36 kombinasi Perbandingan harga.
+- `/raja-kirim/kalkulator.html` memakai modul data beku `tarif-contoh.js`; muat sebelum `harga.js`/`kalkulator.js`. Pengaturan kalkulator disimpan di localStorage `raja-kirim-kalkulator-v1`, terpisah dari harga vendor. Semua angka adalah simulasi. API murni `window.RajaKirimKalkulator` menyediakan `defaults`, `validateInput`, `validateSettings`, `calculate`, `compare`, `loadSettings`, dan `saveSettings`; `compare` mengembalikan `{ok, results}` yang berisi rute, moda, ukuran, total/rincian USD, kurs, transit, dan selisih tanpa pembulatan. Jangan menghitung ulang melalui render untuk integrasi surat.
 - Pemeriksaan HTTP (tanpa browser): `node scripts/static-site.cjs http <alamat-preview>` setelah build dan Preview aktif.
-- Build menyalin hanya 11 berkas publik ke `dist/`. Sajikan `dist/`, jangan seluruh repository; `serve.json` menonaktifkan directory listing. Gunakan resolusi indeks bawaan server agar `/`, `/lintas-samudra/`, dan `/raja-kirim/` berfungsi; tautan `.html` tetap didukung melalui pengalihan URL bawaan. Tambahkan berkas publik baru ke allowlist `scripts/static-site.cjs`.
+- Build menyalin hanya 15 berkas publik ke `dist/` (11 berkas lama + 4 berkas kalkulator). Sajikan `dist/`, jangan seluruh repository; `serve.json` menonaktifkan directory listing. `serve.json` membatasi `cleanUrls` ke tiga direktori situs dan memakai `trailingSlash: true` agar URL direktori selalu berakhiran `/`, sementara halaman `.html` tidak dialihkan ke subdirektori yang merusak aset relatif. Tambahkan berkas publik baru ke allowlist `scripts/static-site.cjs`.
 - Tidak perlu akun atau API key. Peta dan font memerlukan internet (unpkg, OpenFreeMap, Google Fonts). Seluruh alur bisnis tetap simulasi; data pelanggan tetap di localStorage browser.
 - Perubahan sumber statis perlu build ulang dan restart Preview karena tidak ada HMR. Jangan jalankan server melalui shell; gunakan kontrol Preview Foundry.
 

@@ -1,0 +1,177 @@
+{
+  "designSystemId": "ds_d10dba8b754b400880a9",
+  "workspaceId": "ja",
+  "name": "Bright Cargo look",
+  "version": 1,
+  "mode": "advisory",
+  "manifestSha256": "54a73e5c38480999c25bbe43f7102dbdc19410b82198e8fec24a44229b4e0983",
+  "materialisedAt": 1794834896756,
+  "files": {
+    "src/styles/design-tokens.css": "b3c2de9c22519e8f9f78794f05633e76f8c41bcc548d7d4c019a4044f44219bc",
+    "tailwind.design-system.preset.ts": "a9227a3fc59030fa9a1eb7035937d36ac4da774df56b721345127a0e903f97b9",
+    ".cdf/design-system/tokens.json": "b538502d83471cababb37937f487c2914ffc15966311a41fd7e5ccb0f630157b",
+    ".cdf/design-system/SKILL.md": "658c7e0a9b686b99084d67dfa62a803d1b34797caac1a00b3f221de45c16194b"
+  },
+  "assets": {},
+  "manifest": {
+    "schemaVersion": 1,
+    "name": "Bright Cargo look",
+    "summary": "A look chosen in the Designer for this app.",
+    "brand": {
+      "organisation": "",
+      "logos": [],
+      "doNots": []
+    },
+    "colors": {
+      "mode": "light",
+      "palette": {
+        "background": "#FFFFFF",
+        "foreground": "#17132B",
+        "card": "#FFFFFF",
+        "primary": "#5B2EE5",
+        "primary-foreground": "#FFFFFF",
+        "secondary": "#F1EDFF",
+        "secondary-foreground": "#3A1FA8",
+        "muted": "#F5F4FA",
+        "muted-foreground": "#5F5A78",
+        "accent": "#FFE9DD",
+        "accent-foreground": "#7A2E0B",
+        "border": "#E4E0F2",
+        "destructive": "#D92D20",
+        "white": "#FFFFFF",
+        "accent-2": "#E8501A"
+      },
+      "semantic": {
+        "light": {
+          "background": "background",
+          "foreground": "foreground",
+          "card": "card",
+          "card-foreground": "foreground",
+          "popover": "card",
+          "popover-foreground": "foreground",
+          "primary": "primary",
+          "primary-foreground": "primary-foreground",
+          "secondary": "secondary",
+          "secondary-foreground": "secondary-foreground",
+          "muted": "muted",
+          "muted-foreground": "muted-foreground",
+          "accent": "accent",
+          "accent-foreground": "accent-foreground",
+          "destructive": "destructive",
+          "destructive-foreground": "white",
+          "border": "border",
+          "input": "border",
+          "ring": "primary"
+        },
+        "dark": {}
+      },
+      "contrastPolicy": "wcag-aa"
+    },
+    "typography": {
+      "fonts": [
+        {
+          "role": "sans",
+          "family": "Rounded",
+          "source": "system",
+          "weights": [
+            400,
+            500,
+            600,
+            700
+          ],
+          "fallback": "ui-rounded, \"SF Pro Rounded\", \"Nunito\", \"Segoe UI\", system-ui, sans-serif"
+        },
+        {
+          "role": "display",
+          "family": "Geometric",
+          "source": "system",
+          "weights": [
+            600,
+            700,
+            800
+          ],
+          "fallback": "\"Avenir Next\", Avenir, \"Century Gothic\", Futura, \"Montserrat\", \"Segoe UI\", system-ui, sans-serif"
+        },
+        {
+          "role": "mono",
+          "family": "JetBrains Mono",
+          "source": "system",
+          "fallback": "ui-monospace, SFMono-Regular, monospace"
+        }
+      ],
+      "scale": {
+        "h1": "text-3xl font-bold tracking-tight",
+        "h2": "text-xl font-semibold",
+        "h3": "text-lg font-semibold",
+        "body": "text-sm",
+        "muted": "text-sm text-muted-foreground"
+      }
+    },
+    "shape": {
+      "radius": {
+        "sm": "18px",
+        "md": "22px",
+        "lg": "26px",
+        "full": "9999px"
+      },
+      "shadow": "strong",
+      "density": "comfortable"
+    },
+    "spacing": {
+      "base": 4,
+      "pagePadding": "px-4 py-8",
+      "sectionGap": "space-y-8"
+    },
+    "icons": {
+      "library": "lucide",
+      "strokeWidth": 1.75
+    },
+    "components": {
+      "library": {
+        "kind": "shadcn",
+        "sharedUiPackage": null
+      },
+      "rules": [
+        {
+          "id": "buttons-semantic",
+          "component": "Button",
+          "rule": "Use the shadcn Button with semantic variants; never introduce custom colours on buttons.",
+          "severity": "required"
+        },
+        {
+          "id": "dialogs-shadcn",
+          "component": "Dialog",
+          "rule": "Use the shadcn Dialog for modals; no hand-rolled overlays.",
+          "severity": "required"
+        },
+        {
+          "id": "forms-labelled",
+          "component": "Form",
+          "rule": "Every input has a visible Label and an error message slot.",
+          "severity": "advisory"
+        }
+      ],
+      "overrides": {}
+    },
+    "voice": {
+      "case": "sentence",
+      "tone": [
+        "clear",
+        "direct"
+      ],
+      "glossary": []
+    },
+    "enforcement": {
+      "allowedColorSources": [
+        "semantic",
+        "palette"
+      ],
+      "forbidHardcodedHex": true,
+      "protectedAssets": [],
+      "requiredFiles": [
+        "src/styles/design-tokens.css"
+      ]
+    },
+    "notes": ""
+  }
+}

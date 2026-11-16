@@ -5,6 +5,7 @@ const assert = require('node:assert/strict');
 const { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, unlinkSync } = require('node:fs');
 const path = require('node:path');
 const { Script } = require('node:vm');
+const checkCalculator = require('./kalkulator-tests.cjs');
 
 const root = path.resolve(__dirname, '..');
 const output = path.join(root, 'dist');
@@ -17,6 +18,10 @@ const files = [
   'raja-kirim/index.html',
   'raja-kirim/harga.css',
   'raja-kirim/harga.js',
+  'raja-kirim/kalkulator.html',
+  'raja-kirim/kalkulator.js',
+  'raja-kirim/kalkulator.css',
+  'raja-kirim/tarif-contoh.js',
   'raja-kirim/surat.html',
   'raja-kirim/surat.css',
   'raja-kirim/surat.js'
@@ -33,7 +38,8 @@ function localTarget(file, reference) {
 function check() {
   const serverConfig = JSON.parse(readFileSync(path.join(root, 'serve.json'), 'utf8'));
   assert.equal(serverConfig.directoryListing, false, 'Daftar direktori harus dinonaktifkan');
-  assert.notEqual(serverConfig.cleanUrls, false, 'Resolusi halaman indeks server harus tetap aktif');
+  assert.deepEqual(serverConfig.cleanUrls, ['/', '/raja-kirim', '/lintas-samudra'], 'Resolusi indeks hanya untuk direktori situs; pertahankan URL .html');
+  assert.equal(serverConfig.trailingSlash, true, 'URL direktori harus memakai garis miring agar aset relatif benar');
   const sources = new Map(files.map((file) => [file, readFileSync(path.join(root, file), 'utf8')]));
   let references = 0;
   for (const [file, source] of sources) {
@@ -70,7 +76,7 @@ function check() {
   assert.match(home, /href="lintas-samudra\/index\.html"/, 'Pilihan halaman Lintas Samudra tidak tersedia');
   assert.match(lintas, /href="\.\.\/raja-kirim\/index\.html"/, 'Navigasi ke Raja Kirim tidak tersedia');
   assert.match(raja, /href="\.\.\/lintas-samudra\/index\.html"/, 'Navigasi ke Lintas Samudra tidak tersedia');
-  for (const file of ['lintas-samudra/index.html', 'raja-kirim/index.html', 'raja-kirim/surat.html']) {
+  for (const file of ['lintas-samudra/index.html', 'raja-kirim/index.html', 'raja-kirim/surat.html', 'raja-kirim/kalkulator.html']) {
     assert.match(sources.get(file), /href="\.\.\/index\.html"/, `${file}: navigasi ke pilihan halaman tidak tersedia`);
   }
   const data = JSON.parse(sources.get('lintas-samudra/data.json'));
@@ -100,9 +106,37 @@ function check() {
     }
   }
   assert.match(sources.get('lintas-samudra/app.js'), /fetch\('data\.json(?:\?[^']*)?'\)/, 'Lokasi pemuatan data contoh berubah');
+  const sandbox = { window: {} };
+  new Script(sources.get('raja-kirim/tarif-contoh.js'), { filename: 'tarif-contoh.js' }).runInNewContext(sandbox, { timeout: 1000 });
+  const rates = sandbox.window.RajaKirimData;
+  assert(rates && Object.isFrozen(rates), 'Modul angka contoh bersama harus dibekukan');
+  assert.equal(rates.countries.length, 6, 'Harus ada enam negara contoh');
+  assert.equal(new Set(rates.countries).size, 6, 'Negara contoh duplikat');
+  const within = (value, min, max) => Number.isFinite(value) && value >= min && value <= max;
+  assert(within(rates.asuransi, 0, 100) && within(rates.kurs, Number.MIN_VALUE, Number.MAX_VALUE), 'Asuransi/kurs contoh tidak valid');
+  for (const direction of ['ekspor', 'impor']) {
+    for (const country of rates.countries) {
+      const row = rates.rute[direction][country];
+      assert(row && within(row.lokal, 0, 1000000) && within(row.bea, 0, 100) && within(row.pajak, 0, 100), `${direction}/${country}: biaya/persen tidak valid`);
+      for (const mode of ['Udara', 'LCL', 'FCL']) {
+        assert(within(row.tarif[mode], 0, 1000000), `${direction}/${country}/${mode}: tarif tidak valid`);
+        assert(within(row.transit[mode], 1, 120) && Number.isInteger(row.transit[mode]), `${direction}/${country}/${mode}: transit tidak valid`);
+      }
+    }
+  }
+  for (const file of ['raja-kirim/index.html', 'raja-kirim/surat.html', 'raja-kirim/kalkulator.html']) {
+    assert.match(sources.get(file), /<nav\b[^>]*>[\s\S]*?<a\b[^>]*href="kalkulator\.html"[^>]*>Kalkulator negara<\/a>[\s\S]*?<\/nav>/, `${file}: navigasi kalkulator tidak tersedia`);
+  }
+  assert.match(sources.get('raja-kirim/kalkulator.html'), /aria-current="page" href="kalkulator\.html"/, 'Navigasi kalkulator harus aktif');
+  for (const [file, script] of [['raja-kirim/index.html', 'harga.js'], ['raja-kirim/kalkulator.html', 'kalkulator.js']]) {
+    const tags = [...sources.get(file).matchAll(/<script\b[^>]*>/g)].map((match) => match[0]);
+    assert(tags.every((tag) => /\bdefer\b/.test(tag)), `${file}: skrip harus defer`);
+    assert(tags.findIndex((tag) => tag.includes('tarif-contoh.js')) < tags.findIndex((tag) => tag.includes(script)), `${file}: data harus dimuat sebelum konsumen`);
+  }
+  checkCalculator(sources, sandbox);
   const pageCount = files.filter((file) => file.endsWith('.html')).length;
   const scriptCount = files.filter((file) => file.endsWith('.js')).length;
-  console.log(`OK: ${pageCount} halaman HTML, ${scriptCount} skrip JavaScript, ${references} referensi lokal, ${data.shipments.length} pengiriman contoh; navigasi dua halaman tersedia.`);
+  console.log(`OK: ${pageCount} halaman HTML, ${scriptCount} skrip JavaScript, ${references} referensi lokal, ${data.shipments.length} pengiriman contoh; navigasi situs tersedia.`);
 }
 
 function removeStaleOutput(directory) {
@@ -142,10 +176,26 @@ async function verifyHttp(address) {
     if (file.endsWith('.html')) {
       assert.match(response.headers.get('content-type') || '', /text\/html/);
       assert(body.includes(expected.match(/<title>[^<]+<\/title>/)[0]), `${file}: judul halaman tidak sesuai`);
+      for (const match of expected.matchAll(/\b(?:src|href)="([^"]+\.(?:js|css))"/g)) {
+        const target = localTarget(file, match[1]);
+        if (!target) continue;
+        const assetUrl = new URL(match[1], response.url);
+        const asset = await fetch(assetUrl, { signal: AbortSignal.timeout(20000) });
+        assert.equal(asset.status, 200, `${file}: aset relatif ${assetUrl.pathname} HTTP ${asset.status}`);
+        assert.equal(await asset.text(), readFileSync(path.join(output, target.file), 'utf8'), `${file}: aset relatif tidak sesuai`);
+        console.log(`OK aset relatif HTTP 200: ${target.file}`);
+      }
     } else {
       assert.equal(body, expected, `${file}: respons tidak sesuai berkas situs`);
     }
     console.log(`OK HTTP 200: ${file}`);
+  }
+  for (const directory of ['raja-kirim', 'lintas-samudra']) {
+    const response = await fetch(new URL(directory, base), { signal: AbortSignal.timeout(20000) });
+    assert.equal(response.status, 200, `${directory}: URL direktori tanpa garis miring harus dapat dibuka`);
+    assert(new URL(response.url).pathname.endsWith(`/${directory}/`), `${directory}: URL akhir harus memiliki garis miring`);
+    await response.body?.cancel();
+    console.log(`OK direktori kanonis HTTP 200: ${directory}/`);
   }
   for (const file of ['.git/HEAD', 'README.md', 'AGENTS.md', 'Doc/expedisi.txt', 'scripts/static-site.cjs', '.cdf/runtime.json', '.cdf-library/']) {
     const response = await fetch(new URL(file, base), { signal: AbortSignal.timeout(20000) });

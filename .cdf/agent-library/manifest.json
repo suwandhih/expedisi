@@ -1,0 +1,42 @@
+{
+  "version": 1,
+  "kits": [
+    {
+      "id": "cdf-design-system",
+      "label": "Design System: Bright Cargo look",
+      "sourceKind": "scan",
+      "sourceRef": "design-system:ds_d10dba8b754b400880a9@v1",
+      "enabled": true,
+      "items": [
+        {
+          "id": "project:cdf-design-system:skill:design-system",
+          "kind": "skill",
+          "name": "Design System",
+          "description": "Brand tokens, logos, typography, and component rules for \"Bright Cargo look\" v1. Load before any UI work.",
+          "sourcePath": ".cdf/design-system/SKILL.md",
+          "triggers": [
+            "design",
+            "brand",
+            "logo",
+            "colour",
+            "color",
+            "theme",
+            "style",
+            "ui",
+            "layout",
+            "component",
+            "typography",
+            "font"
+          ],
+          "activationMode": "suggested",
+          "priority": 5,
+          "enabled": true,
+          "warnings": []
+        }
+      ],
+      "warnings": [],
+      "createdAt": "2026-11-16T13:14:56.757Z",
+      "updatedAt": "2026-11-16T13:14:56.757Z"
+    }
+  ]
+}

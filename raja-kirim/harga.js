@@ -2,12 +2,7 @@
 const origin = document.querySelector('#origin');
 const destination = document.querySelector('#destination');
 const mode = document.querySelector('#mode');
-const countries = ['Singapura', 'Malaysia', 'Tiongkok', 'Vietnam', 'Australia', 'Amerika Serikat'];
-const vendors = [
-  { name: 'Nusantara Ocean', air: 'Meridian Air Cargo', mark: 'NO', adjustment: 0, local: 180, days: 0, label: 'Harga terendah' },
-  { name: 'Pacific Bridge', air: 'Pacific Air Connect', mark: 'PB', adjustment: 185, local: 155, days: -2, label: 'Transit lebih cepat' },
-  { name: 'Atlas Freight', air: 'Atlas Air Freight', mark: 'AF', adjustment: 295, local: 210, days: 2, label: 'Opsi fleksibel' }
-];
+const { countries, vendors, adjustments } = window.RajaKirimData;
 const money = (amount) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
 function setRoute() {
   const isExport = document.querySelector('[name="direction"]:checked').value === 'ekspor';
@@ -20,7 +15,7 @@ function setRoute() {
 function renderOffers() {
   const direction = document.querySelector('[name="direction"]:checked').value;
   const country = direction === 'ekspor' ? destination.value : origin.value;
-  const adjustment = { Singapura: 0, Malaysia: 35, Tiongkok: 120, Vietnam: 85, Australia: 150, 'Amerika Serikat': 380 }[country];
+  const adjustment = adjustments[country];
   const base = (mode.value === 'FCL' ? 2100 : mode.value === 'Udara' ? 720 : 820) + adjustment;
   const days = (mode.value === 'Udara' ? 6 : mode.value === 'FCL' ? 25 : 28) + (country === 'Amerika Serikat' ? 5 : 0);
   const offers = vendors.map((vendor) => ({ ...vendor, freight: base + vendor.adjustment, total: base + vendor.adjustment + vendor.local, transit: Math.max(1, days + vendor.days) })).sort((a, b) => a.total - b.total);
