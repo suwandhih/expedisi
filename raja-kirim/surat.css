@@ -76,9 +76,13 @@ input::placeholder { color: var(--muted); }
 input[type=checkbox], input[type=radio] { accent-color: var(--blue); }
 .editor-shell { overflow: hidden; border: 1px solid var(--line); border-radius: var(--radius-sm); }
 .editor-shell:focus-within { outline: 3px solid var(--brand-primary); outline-offset: 3px; }
-.toolbar { display: flex; flex-wrap: wrap; gap: 3px; padding: 7px; border-bottom: 1px solid var(--line); background: var(--brand-muted); }
-.toolbar button { width: 36px; height: 34px; border: 0; border-radius: var(--radius-sm); background: transparent; color: var(--navy); font-weight: 700; }
-.toolbar button:hover, .toolbar button[aria-pressed=true] { background: var(--brand-secondary); color: var(--brand-secondary-foreground); }
+.toolbar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; padding: 8px; border-bottom: 1px solid var(--line); background: var(--brand-muted); }
+.toolbar-group { display: inline-flex; flex: 0 0 auto; align-items: center; gap: 4px; }
+.toolbar-group + .toolbar-group { padding-inline-start: 8px; border-inline-start: 1px solid var(--line); }
+.toolbar .toolbar-button { flex: 0 0 44px; width: 44px; height: 44px; padding: 0; border-radius: var(--radius-sm); color: var(--navy); line-height: 1; box-shadow: none; }
+.toolbar-button svg { display: block; flex: none; width: 20px; height: 20px; pointer-events: none; }
+.toolbar .toolbar-button:hover { background: var(--brand-secondary); color: var(--brand-secondary-foreground); }
+.toolbar .toolbar-button:focus-visible { outline-offset: -3px; }
 .editor { min-height: 155px; padding: 14px; color: var(--navy); font-size: 14px; line-height: 1.7; overflow-wrap: anywhere; }
 .template-editor { min-height: 300px; }
 .editor:empty:before { content: attr(data-placeholder); color: var(--muted); pointer-events: none; }

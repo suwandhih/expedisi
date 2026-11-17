@@ -249,5 +249,71 @@ module.exports = function checkBrand(sources) {
   new Script('exportPDF(customer, content); exportPNG(customer, content);').runInNewContext(exportSandbox, { timeout: 1000 });
   assert(statuses.slice(-2).every(status => status.error), 'Keep blocked-popup/canvas error feedback');
   assert.match(surat, /command === 'hiliteColor' \? brandValue\('brand-accent'\) : null/);
+
+  // Exercise the same generated toolbar for message and template editors without a browser.
+  const toolbarNode = tag => ({
+    tag, children: [], attributes: {}, listeners: {},
+    append(child) { this.children.push(child); },
+    setAttribute(name, value) { this.attributes[name] = value; },
+    addEventListener(name, handler) { this.listeners[name] = handler; }
+  });
+  const editorIds = ['mail-body', 'template-editor'];
+  const toolbars = editorIds.map(id => Object.assign(toolbarNode('div'), { dataset: { editor: id } }));
+  const focused = [];
+  const inputEvents = [];
+  const editorNodes = new Map(editorIds.map(id => [id, Object.assign(toolbarNode('div'), {
+    focus() { focused.push(id); },
+    dispatchEvent(event) { inputEvents.push({ id, type: event.type, bubbles: event.bubbles }); }
+  })]));
+  const executed = [];
+  const toolbarStart = surat.indexOf('const toolbarGroups = [');
+  const toolbarEnd = surat.indexOf('\nfunction activateTab(', toolbarStart);
+  assert(toolbarStart >= 0 && toolbarEnd > toolbarStart, 'Toolbar setup must be present');
+  new Script(declaration(surat, 'brandValue') + '\n' + surat.slice(toolbarStart, toolbarEnd)).runInNewContext({
+    Event, getComputedStyle,
+    $: id => editorNodes.get(id),
+    document: {
+      documentElement: {},
+      querySelectorAll(selector) { assert.equal(selector, '.toolbar'); return toolbars; },
+      createElement: toolbarNode,
+      execCommand(command, showUI, value) { executed.push({ command, showUI, value }); }
+    }
+  }, { timeout: 1000 });
+  const expectedCommands = ['bold', 'italic', 'insertUnorderedList', 'insertOrderedList', 'hiliteColor'];
+  const expectedLabels = ['Tebal', 'Miring', 'Daftar berpoin', 'Daftar bernomor', 'Sorot teks'];
+  for (const [i, toolbar] of toolbars.entries()) {
+    assert.equal(toolbar.attributes.role, 'group');
+    assert.deepEqual(toolbar.children.map(group => group.attributes['aria-label']), ['Gaya teks', 'Daftar', 'Penyorotan']);
+    assert.deepEqual(toolbar.children.map(group => group.children.length), [2, 2, 1]);
+    const buttons = toolbar.children.flatMap(group => group.children);
+    buttons.forEach((button, index) => {
+      assert.equal(button.type, 'button');
+      assert.match(button.className, /bc-btn bc-btn--ghost toolbar-button/);
+      assert.equal(button.attributes['aria-label'], expectedLabels[index]);
+      assert.equal(button.title, expectedLabels[index]);
+      assert.match(button.innerHTML, /^<svg width="20" height="20" viewBox="0 0 24 24"/);
+      assert.match(button.innerHTML, /aria-hidden="true" focusable="false"/);
+      assert.doesNotMatch(button.innerHTML, /<text\b|<script\b/);
+      let prevented = false;
+      button.listeners.mousedown({ preventDefault() { prevented = true; } });
+      assert(prevented, 'Pointer activation must preserve the text selection');
+      button.listeners.click();
+      assert.deepEqual(executed.at(-1), {
+        command: expectedCommands[index], showUI: false,
+        value: index === 4 ? tokens.get('brand-accent') : null
+      });
+      assert.equal(focused.at(-1), editorIds[i]);
+      assert.deepEqual(inputEvents.at(-1), { id: editorIds[i], type: 'input', bubbles: true });
+    });
+  }
+  assert.equal(executed.length, 10);
+  assert.equal(inputEvents.length, 10);
+  const editorCSS = sources.get('raja-kirim/surat.css');
+  assert.match(editorCSS, /\.toolbar \{[^}]*flex-wrap: wrap;[^}]*align-items: center;[^}]*gap: 8px;/);
+  assert.match(editorCSS, /\.toolbar-group \{[^}]*display: inline-flex;[^}]*flex: 0 0 auto;/);
+  assert.match(editorCSS, /\.toolbar \.toolbar-button \{[^}]*width: 44px;[^}]*height: 44px;[^}]*padding: 0;/);
+  assert.match(editorCSS, /\.toolbar-button svg \{[^}]*width: 20px;[^}]*height: 20px;/);
+  assert.match(editorCSS, /\.toolbar \.toolbar-button:focus-visible \{ outline-offset: -3px; \}/);
+  console.log('OK toolbar: 2 editors, 3 groups, 10 labelled vector buttons, selection preservation, commands and input events; fixed icon/touch-target CSS (Node/VM, no browser).');
   console.log('OK Bright Cargo: token-only public CSS/JS, shared actions, comparison controls, resolved map markers/route, standalone print tokens, PNG colours/fonts and export errors (Node/VM, no browser).');
 };

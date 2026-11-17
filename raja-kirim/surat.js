@@ -108,27 +108,41 @@ function refreshCustomerOptions(initial = false) {
 }
 refreshCustomerOptions(true);
 
-const commands = [
-  { command: 'bold', label: 'Tebal', text: 'B' },
-  { command: 'italic', label: 'Miring', text: 'I' },
-  { command: 'insertUnorderedList', label: 'Daftar berpoin', text: '• ≡' },
-  { command: 'insertOrderedList', label: 'Daftar bernomor', text: '1. ≡' },
-  { command: 'hiliteColor', label: 'Sorot teks', text: '▰' }
+const toolbarGroups = [
+  { label: 'Gaya teks', commands: [
+    { command: 'bold', label: 'Tebal', icon: '<path d="M6 12h9a4 4 0 0 1 0 8H6z"/><path d="M6 4h8a4 4 0 0 1 0 8H6z"/>' },
+    { command: 'italic', label: 'Miring', icon: '<path d="M19 4h-9M14 20H5M15 4 9 20"/>' }
+  ] },
+  { label: 'Daftar', commands: [
+    { command: 'insertUnorderedList', label: 'Daftar berpoin', icon: '<path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/>' },
+    { command: 'insertOrderedList', label: 'Daftar bernomor', icon: '<path d="M10 6h11M10 12h11M10 18h11M4 10V4H3M3 10h2M3 14h2v2l-2 2v2h2"/>' }
+  ] },
+  { label: 'Penyorotan', commands: [
+    { command: 'hiliteColor', label: 'Sorot teks', icon: '<path d="m9 11-6 6v3h9l3-3"/><path d="m22 12-4 4a2 2 0 0 1-3 0L8 9a2 2 0 0 1 0-3l4-4"/><path d="m18 13-5-5M2 22h7"/>' }
+  ] }
 ];
 document.querySelectorAll('.toolbar').forEach(toolbar => {
   const editor = $(toolbar.dataset.editor);
-  commands.forEach(({ command, label, text }) => {
-    const button = document.createElement('button');
-    button.type = 'button'; button.textContent = text; button.title = label; button.setAttribute('aria-label', label);
-    if (command === 'italic') button.style.fontStyle = 'italic';
-    // Preserve the editor selection when activating a toolbar button with a pointer.
-    button.addEventListener('mousedown', event => event.preventDefault());
-    button.addEventListener('click', () => {
-      editor.focus();
-      document.execCommand(command, false, command === 'hiliteColor' ? brandValue('brand-accent') : null);
-      editor.dispatchEvent(new Event('input', { bubbles: true }));
+  toolbar.setAttribute('role', 'group');
+  toolbarGroups.forEach(({ label, commands }) => {
+    const group = document.createElement('div');
+    group.className = 'toolbar-group'; group.setAttribute('role', 'group'); group.setAttribute('aria-label', label);
+    commands.forEach(({ command, label, icon }) => {
+      const button = document.createElement('button');
+      button.type = 'button'; button.className = 'bc-btn bc-btn--ghost toolbar-button';
+      button.title = label; button.setAttribute('aria-label', label);
+      // Static vector icons cannot wrap like text glyphs or depend on the page font.
+      button.innerHTML = `<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">${icon}</svg>`;
+      // Preserve the editor selection when activating a toolbar button with a pointer.
+      button.addEventListener('mousedown', event => event.preventDefault());
+      button.addEventListener('click', () => {
+        editor.focus();
+        document.execCommand(command, false, command === 'hiliteColor' ? brandValue('brand-accent') : null);
+        editor.dispatchEvent(new Event('input', { bubbles: true }));
+      });
+      group.append(button);
     });
-    toolbar.append(button);
+    toolbar.append(group);
   });
   editor.addEventListener('paste', event => {
     event.preventDefault();
