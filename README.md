@@ -3,6 +3,7 @@
 Frontend statis berbahasa Indonesia untuk demonstrasi. Identitas, tarif, vendor, booking, status, posisi, dokumen, POD, klaim, dan tagihan adalah **simulasi**, bukan layanan atau tracking real-time. Tidak ada backend, transaksi, pembayaran, upload, atau pengiriman klaim. Pilihan tema dapat disimpan di browser; data klaim hanya tampil sementara dan tidak disimpan.
 
 ## Demo Raja Kirim
+[Panduan fitur Raja Kirim](panduan-rajakirim.md)
 
 Halaman utama (`/`) menyediakan dua pilihan: [Raja Kirim](raja-kirim/index.html) di `/raja-kirim/` dan [Lintas Samudra](lintas-samudra/index.html) di `/lintas-samudra/`. Keduanya memiliki halaman tersendiri, dengan navigasi untuk berpindah atau kembali ke pilihan halaman. Fitur asli dipertahankan tanpa menduplikasi implementasi. Raja Kirim memfokuskan perbandingan alternatif harga ekspor/impor serta simulasi surat dan dokumen pelanggan. Pengelolaan pelanggan menyimpan kontak dan riwayat korespondensi simulasi di penyimpanan browser lokal, yang dapat dihapus melalui pengaturan browser. Template dapat diedit dan dipratinjau per pelanggan; perubahan template hanya berlaku selama halaman terbuka. Email dan WhatsApp hanya berupa contoh tampilan: tidak ada koneksi atau pesan yang dikirim. Seluruh data dan tarif adalah fiktif, bukan penawaran aktual. Jangan masukkan data sensitif.
 
