@@ -5,9 +5,9 @@
     countries: ['Singapura', 'Malaysia', 'Tiongkok', 'Vietnam', 'Australia', 'Amerika Serikat'],
     adjustments: { Singapura: 0, Malaysia: 35, Tiongkok: 120, Vietnam: 85, Australia: 150, 'Amerika Serikat': 380 },
     vendors: [
-      { name: 'Nusantara Ocean', air: 'Meridian Air Cargo', mark: 'NO', adjustment: 0, local: 180, days: 0, label: 'Harga terendah' },
-      { name: 'Pacific Bridge', air: 'Pacific Air Connect', mark: 'PB', adjustment: 185, local: 155, days: -2, label: 'Transit lebih cepat' },
-      { name: 'Atlas Freight', air: 'Atlas Air Freight', mark: 'AF', adjustment: 295, local: 210, days: 2, label: 'Opsi fleksibel' }
+      { name: 'Nusantara Ocean', air: 'Meridian Air Cargo', mark: 'NO', adjustment: 0, local: 180, days: 0, label: 'Harga terendah', keunggulan: ['Jadwal keberangkatan reguler', 'Cocok untuk pengiriman rutin hemat biaya'] },
+      { name: 'Pacific Bridge', air: 'Pacific Air Connect', mark: 'PB', adjustment: 185, local: 155, days: -2, label: 'Transit lebih cepat', keunggulan: ['Prioritas muat di pelabuhan/bandara', 'Pembaruan status pengiriman harian', 'Bantuan pengurusan dokumen pabean'] },
+      { name: 'Atlas Freight', air: 'Atlas Air Freight', mark: 'AF', adjustment: 295, local: 210, days: 2, label: 'Opsi fleksibel', keunggulan: ['Jadwal muat dapat diubah sebelum keberangkatan', 'Penanganan barang khusus atau mudah pecah', 'Penjemputan barang di gudang pelanggan'] }
     ],
     asuransi: 0.5,
     kurs: 16000,

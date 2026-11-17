@@ -21,9 +21,67 @@ module.exports = function checkCalculator(sources, sandbox) {
     { name: 'Pacific Bridge', air: 'Pacific Air Connect', mark: 'PB', adjustment: 185, local: 155, days: -2, label: 'Transit lebih cepat' },
     { name: 'Atlas Freight', air: 'Atlas Air Freight', mark: 'AF', adjustment: 295, local: 210, days: 2, label: 'Opsi fleksibel' }
   ];
-  assert.deepEqual(copy(data.vendors), legacyVendors, 'Data vendor harus sama dengan baseline sebelum refactor');
+  assert.deepEqual(copy(data.vendors).map(({ keunggulan, ...vendor }) => vendor), legacyVendors, 'Harga dan data vendor harus sama dengan baseline sebelum refactor');
+  const benefits = [
+    ['Jadwal keberangkatan reguler', 'Cocok untuk pengiriman rutin hemat biaya'],
+    ['Prioritas muat di pelabuhan/bandara', 'Pembaruan status pengiriman harian', 'Bantuan pengurusan dokumen pabean'],
+    ['Jadwal muat dapat diubah sebelum keberangkatan', 'Penanganan barang khusus atau mudah pecah', 'Penjemputan barang di gudang pelanggan']
+  ];
+  assert.deepEqual(copy(data.vendors).map((vendor) => vendor.keunggulan), benefits, 'Keunggulan laut dan udara memakai contoh yang disepakati');
 
-  // Stub terbatas untuk kontrak render perbandingan, bukan simulasi browser.
+  // Stub terbatas untuk kontrak render/event perbandingan, bukan simulasi browser.
+  function comparisonNodes() {
+    const nodes = new Map();
+    for (const selector of ['#origin', '#destination', '#origin-label', '#destination-label', '#mode', '#summary', '#count', '#offers', '#results-note', '#selection-summary', '#rate-form', '[name="direction"]:checked']) {
+      nodes.set(selector, { value: '', innerHTML: '', textContent: '', events: new Map(), addEventListener(event, handler) { this.events.set(event, handler); } });
+    }
+    const offers = nodes.get('#offers');
+    Object.defineProperty(offers, 'innerHTML', {
+      get() { return this.markup || ''; },
+      set(markup) {
+        this.markup = markup;
+        this.cards = [...markup.matchAll(/<article class="([^"]+)" data-offer-index="(\d+)">([\s\S]*?)<\/article>/g)].map(([, classes, index, body]) => {
+          const classSet = new Set(classes.split(' '));
+          const input = body.match(/<input\b[^>]+>/)?.[0];
+          assert(input, 'Setiap kartu harus berisi radio native');
+          const attributes = new Map([...input.matchAll(/([\w-]+)="([^"]*)"/g)].map(([, key, value]) => [key, value]));
+          const radio = {
+            attributes, value: attributes.get('value'), checked: /\schecked(?:\s|>)/.test(input), tabIndex: Number(attributes.get('tabindex')),
+            setAttribute(key, value) { this.attributes.set(key, value); },
+            matches(selector) { return selector === '[name="offer"]'; },
+            focus() { offers.focused = this; }
+          };
+          const badge = { hidden: /class="offer-selection[^"]*" hidden/.test(body) };
+          return {
+            dataset: { offerIndex: index }, radio, badge,
+            classList: { toggle(name, enabled) { if (enabled) classSet.add(name); else classSet.delete(name); }, contains(name) { return classSet.has(name); } },
+            querySelector(selector) {
+              if (selector === '[name="offer"]') return radio;
+              assert.equal(selector, '.offer-selection');
+              return badge;
+            }
+          };
+        });
+      }
+    });
+    offers.querySelectorAll = (selector) => { assert.equal(selector, '.offer'); return offers.cards; };
+    return nodes;
+  }
+  function assertSelected(nodes, index) {
+    const cards = nodes.get('#offers').cards;
+    assert.equal(cards.length, 3);
+    assert.equal(cards.filter((card) => card.classList.contains('offer--selected')).length, 1);
+    assert.equal(cards.filter((card) => card.radio.checked).length, 1);
+    assert.equal(cards.filter((card) => !card.badge.hidden).length, 1);
+    assert.equal(cards.filter((card) => card.radio.tabIndex === 0).length, 1);
+    cards.forEach((card, i) => {
+      assert.equal(card.classList.contains('offer--selected'), i === index);
+      assert.equal(card.radio.checked, i === index);
+      assert.equal(card.radio.attributes.get('aria-checked'), String(i === index));
+      assert.equal(card.radio.tabIndex, i === index ? 0 : -1);
+      assert.equal(card.badge.hidden, i !== index);
+    });
+  }
   const money = (value) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(value);
   const rupiah = (value) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'IDR', maximumFractionDigits: 0 }).format(value);
   assert.equal(data.kurs, 16000, 'Kurs contoh harus tetap sama');
@@ -31,10 +89,7 @@ module.exports = function checkCalculator(sources, sandbox) {
   for (const direction of ['ekspor', 'impor']) {
     for (const mode of ['Udara', 'LCL', 'FCL']) {
       for (const country of countries) {
-        const nodes = new Map();
-        for (const selector of ['#origin', '#destination', '#origin-label', '#destination-label', '#mode', '#summary', '#count', '#offers', '#results-note', '#rate-form', '[name="direction"]:checked']) {
-          nodes.set(selector, { value: '', innerHTML: '', textContent: '', addEventListener() {} });
-        }
+        const nodes = comparisonNodes();
         nodes.get('#origin').value = direction === 'ekspor' ? 'Jakarta, Indonesia' : country;
         nodes.get('#destination').value = direction === 'ekspor' ? country : 'Jakarta, Indonesia';
         nodes.get('#mode').value = mode;
@@ -62,9 +117,20 @@ module.exports = function checkCalculator(sources, sandbox) {
         assert.equal(nodes.get('#origin-label').textContent, direction === 'ekspor' ? 'Kota asal' : 'Negara asal');
         assert.equal(nodes.get('#destination-label').textContent, direction === 'ekspor' ? 'Negara tujuan' : 'Kota tujuan');
         assert.equal(nodes.get('#results-note').textContent, `ⓘ Harga dalam USD, termasuk biaya lokal contoh. Perkiraan Rupiah memakai kurs contoh ${rupiah(16000)} per USD. Estimasi transit dan tarif bukan penawaran aktual.`);
-        assert.equal((output.match(/<article class="offer bc-card bc-card--raised(?: offer--best)?">/g) || []).length, 3);
-        assert.equal((output.match(/ offer--best"/g) || []).length, 1, 'Hanya satu kartu yang ditonjolkan');
-        assert.match(output.trim(), /^<article class="offer bc-card bc-card--raised offer--best">/, 'Tonjolkan harga terendah');
+        assert.equal((output.match(/<article class="offer bc-card bc-card--raised(?: offer--best offer--selected)?" data-offer-index="\d">/g) || []).length, 3);
+        assert.equal((output.match(/ offer--best\b/g) || []).length, 1, 'Hanya satu kartu termurah');
+        assert.match(output.trim(), /^<article class="offer bc-card bc-card--raised offer--best offer--selected"/, 'Pilih harga terendah setelah render');
+        assertSelected(nodes, 0);
+        assert.equal((output.match(/\schecked>/g) || []).length, 1, 'Markup awal hanya mencentang satu radio');
+        assert.equal((output.match(/type="radio" name="offer"/g) || []).length, 3);
+        assert.equal((output.match(/>Terpilih<\/span>/g) || []).length, 3);
+        assert.equal((output.match(/<h4>Keunggulan contoh \(simulasi\)<\/h4>/g) || []).length, 3);
+        assert.deepEqual([...output.matchAll(/<li>([^<]+)<\/li>/g)].map((match) => match[1]), benefits.flat());
+        assert(output.includes('Harga terendah · pembanding'));
+        assert(output.includes(`+${money(160)} dibanding termurah · 2 hari lebih cepat`));
+        assert(output.includes(`+${money(325)} dibanding termurah · 2 hari lebih lama`));
+        names.forEach((name, i) => assert(output.includes(`id="offer-${i}"`) && output.includes(`<span>Pilih ${name}</span>`)));
+        assert.equal(nodes.get('#selection-summary').textContent, `Pilihan Anda: ${names[0]} (simulasi) · ${route} · ${mode === 'Udara' ? 'Udara' : 'Laut · ' + mode} · ${totals[0]} (≈ ${rupiah((base + 180) * 16000)}) · transit ${transit} hari · Harga terendah · pembanding`);
         const shares = [...output.matchAll(/<div class="offer-meter" aria-hidden="true"><span style="--offer-share: ([\d.]+)%"><\/span><\/div>/g)].map((match) => Number(match[1]));
         const expectedTotals = legacyVendors.map((vendor) => base + vendor.adjustment + vendor.local);
         assert.deepEqual(shares, expectedTotals.map((total) => total / Math.max(...expectedTotals) * 100), 'Meter dekoratif harus mengikuti proporsi total tanpa mengubah biaya');
@@ -80,13 +146,24 @@ module.exports = function checkCalculator(sources, sandbox) {
     }
   }
   assert.equal(priceCases, 36, 'Semua kombinasi arah, negara dan moda harus diuji');
+  // Cabang transit sama tanpa mengubah fixture tarif asli.
+  const equalTransitNodes = comparisonNodes();
+  equalTransitNodes.get('#destination').value = 'Singapura';
+  equalTransitNodes.get('#mode').value = 'LCL';
+  equalTransitNodes.get('[name="direction"]:checked').value = 'ekspor';
+  const equalTransitData = copy(data);
+  equalTransitData.vendors.forEach((vendor) => { vendor.days = 0; });
+  new Script(sources.get('raja-kirim/harga.js')).runInNewContext({
+    window: { RajaKirimData: equalTransitData },
+    document: { querySelector: (selector) => equalTransitNodes.get(selector), querySelectorAll: () => [] }
+  }, { timeout: 1000 });
+  assert.equal((equalTransitNodes.get('#offers').innerHTML.match(/dibanding termurah · transit sama/g) || []).length, 2);
+  equalTransitNodes.get('#offers').events.get('change')({ target: equalTransitNodes.get('#offers').cards[1].radio });
+  assert(equalTransitNodes.get('#selection-summary').textContent.endsWith('transit sama'));
 
   // Kontrak event tanpa browser: perubahan arah mengisi ulang pilihan;
   // submit memakai pilihan terbaru dan mencegah navigasi form.
-  const eventNodes = new Map();
-  for (const selector of ['#origin', '#destination', '#origin-label', '#destination-label', '#mode', '#summary', '#count', '#offers', '#results-note', '#rate-form', '[name="direction"]:checked']) {
-    eventNodes.set(selector, { value: '', innerHTML: '', textContent: '', events: new Map(), addEventListener(event, handler) { this.events.set(event, handler); } });
-  }
+  const eventNodes = comparisonNodes();
   for (const selector of ['#origin', '#destination']) {
     const node = eventNodes.get(selector);
     Object.defineProperty(node, 'innerHTML', {
@@ -128,6 +205,48 @@ module.exports = function checkCalculator(sources, sandbox) {
   assert.equal((malaysiaOutput.match(/<p class="offer-route">Malaysia → Jakarta<\/p>/g) || []).length, 3);
   assert.deepEqual([...malaysiaOutput.matchAll(/class="price">([^<]+)/g)].map((match) => match[1]), [1035, 1195, 1360].map(money));
   assert.deepEqual([...malaysiaOutput.matchAll(/<small class="price-idr bc-muted">([^<]+)<\/small>/g)].map((match) => match[1]), [1035, 1195, 1360].map((total) => `≈ ${rupiah(total * 16000)}`));
+  assert(malaysiaOutput.includes(`+${money(160)} dibanding termurah · 2 hari lebih cepat`));
+  assert(malaysiaOutput.includes(`+${money(325)} dibanding termurah · 2 hari lebih lama`));
+  const offersNode = eventNodes.get('#offers');
+  const selectionSummary = eventNodes.get('#selection-summary');
+  function expectedMalaysiaSummary(index) {
+    return `Pilihan Anda: ${legacyVendors[index].name} (simulasi) · Malaysia → Jakarta · Laut · LCL · ${money([1035, 1195, 1360][index])} (≈ ${rupiah([1035, 1195, 1360][index] * 16000)}) · transit ${[28, 26, 30][index]} hari · ${index === 0 ? 'Harga terendah · pembanding' : `+${money(index === 1 ? 160 : 325)} dibanding termurah · 2 hari ${index === 1 ? 'lebih cepat' : 'lebih lama'}`}`;
+  }
+  assertSelected(eventNodes, 0);
+  assert.equal(selectionSummary.textContent, expectedMalaysiaSummary(0));
+  // Klik/tap di badan setiap kartu memilih dan memfokuskan radio tanpa render ulang.
+  for (const index of [1, 2, 0]) {
+    offersNode.events.get('click')({ target: { closest(selector) { return selector === '.offer' ? offersNode.cards[index] : null; } } });
+    assertSelected(eventNodes, index);
+    assert.equal(offersNode.focused, offersNode.cards[index].radio);
+    assert.equal(selectionSummary.textContent, expectedMalaysiaSummary(index));
+  }
+  for (const tag of ['details', 'summary']) {
+    offersNode.events.get('click')({ target: { closest(selector) { return selector === 'details, summary' ? { tag } : offersNode.cards[2]; } } });
+    assertSelected(eventNodes, 0);
+    assert.equal(selectionSummary.textContent, expectedMalaysiaSummary(0), 'Rincian biaya tidak mengubah pilihan');
+  }
+  offersNode.events.get('click')({ target: { closest() { return null; } } });
+  assertSelected(eventNodes, 0);
+  // Perubahan radio native (termasuk Space) memperbarui pilihan/ringkasan.
+  offersNode.events.get('change')({ target: offersNode.cards[1].radio });
+  assertSelected(eventNodes, 1);
+  assert.equal(selectionSummary.textContent, expectedMalaysiaSummary(1));
+  for (const [sourceIndex, key, expectedIndex] of [[1, 'ArrowRight', 2], [2, 'ArrowDown', 0], [0, 'ArrowLeft', 2], [2, 'ArrowUp', 1]]) {
+    let keyPrevented = false;
+    offersNode.events.get('keydown')({ key, target: offersNode.cards[sourceIndex].radio, preventDefault() { keyPrevented = true; } });
+    assert(keyPrevented, 'Panah tidak boleh menggulir halaman');
+    assertSelected(eventNodes, expectedIndex);
+    assert.equal(offersNode.focused, offersNode.cards[expectedIndex].radio);
+    assert.equal(selectionSummary.textContent, expectedMalaysiaSummary(expectedIndex));
+  }
+  offersNode.events.get('keydown')({ key: 'Tab', target: offersNode.cards[1].radio, preventDefault() { assert.fail('Tab tetap berperilaku native'); } });
+  assertSelected(eventNodes, 1);
+  offersNode.events.get('change')({ target: { value: '9', matches() { return true; } } });
+  assertSelected(eventNodes, 1);
+  eventNodes.get('#rate-form').events.get('submit')({ preventDefault() {} });
+  assertSelected(eventNodes, 0);
+  assert.equal(selectionSummary.textContent, expectedMalaysiaSummary(0), 'Bandingkan lagi harus kembali memilih termurah');
   originNode.value = 'Australia';
   eventNodes.get('#mode').value = 'Udara';
   let prevented = false;
@@ -135,6 +254,12 @@ module.exports = function checkCalculator(sources, sandbox) {
   assert(prevented);
   assert.equal(eventNodes.get('#summary').textContent, 'Impor · Australia → Jakarta · Udara');
   assert(eventNodes.get('#offers').innerHTML.includes(`<strong class="price">${money(720 + 150 + 180)}</strong>`));
+  assertSelected(eventNodes, 0);
+  assert(selectionSummary.textContent.includes('Meridian Air Cargo (simulasi) · Australia → Jakarta · Udara'));
+  offersNode.events.get('change')({ target: offersNode.cards[2].radio });
+  assertSelected(eventNodes, 2);
+  assert(selectionSummary.textContent.includes('Atlas Air Freight (simulasi) · Australia → Jakarta · Udara'));
+  assert(selectionSummary.textContent.includes(`${money(1375)} (≈ ${rupiah(1375 * 16000)}) · transit 8 hari`));
   eventNodes.get('[name="direction"]:checked').value = 'ekspor';
   radios[0].events.get('change')();
   assert.equal(originNode.innerHTML, '<option>Jakarta, Indonesia</option>');

@@ -34,6 +34,12 @@ module.exports = function checkBrand(sources) {
   const prices = sources.get('raja-kirim/harga.js');
   assert.match(prices, /<strong class="price">[\s\S]*?<\/strong><small class="price-idr bc-muted">≈ /, 'Perkiraan Rupiah harus kecil dan tepat di bawah harga USD');
   assert.match(prices, /<details>[\s\S]*?<summary>Rincian biaya<\/summary>/);
+  assert.match(raja, /id="offers"[^>]*role="radiogroup"[^>]*aria-label="Pilih ekspedisi"/);
+  assert.match(raja, /↑ Diurutkan dari harga terendah · klik kartu untuk memilih/);
+  assert.match(raja, /<p id="selection-summary" aria-live="polite" aria-atomic="true">/);
+  assert.match(prices, /<label class="offer-choice-label" for="offer-\$\{index\}"><input class="offer-choice" type="radio" name="offer"/);
+  assert.match(prices, /aria-describedby="offer-difference-\$\{index\}"/);
+  assert.match(prices, /Keunggulan contoh \(simulasi\)/);
 
   assert.match(raja, /<h1 id="hero-title">Pengiriman lebih pasti\.<\/h1>/);
   assert.match(raja, /class="intro-link bc-btn bc-btn--lg bc-btn--pill" href="#form-title">Mulai bandingkan ↘/);
@@ -67,6 +73,20 @@ module.exports = function checkBrand(sources) {
   assert.match(scopedCSS, /@media \(prefers-reduced-motion: reduce\)[\s\S]*?transition: none;/);
   assert.match(scopedCSS, /body\.comparison-page \.next\.bc-card \{[^}]*background: var\(--brand-accent\);/);
   assert.match(scopedCSS, /width: var\(--offer-share\);/);
+  assert.doesNotMatch(scopedCSS, /\.offer--best\b/, 'Penekanan visual mengikuti pilihan, bukan selalu termurah');
+  assert.match(scopedCSS, /body\.comparison-page \.offer--selected \{[^}]*border-color: var\(--brand-primary\);[^}]*background: color-mix\(in srgb, var\(--brand-secondary\) 35%, var\(--brand-card\)\);/);
+  assert.match(scopedCSS, /body\.comparison-page \.offer--selected \.offer-meter > span \{ background: var\(--brand-primary\); \}/);
+  assert.match(scopedCSS, /body\.comparison-page \.offer:has\(\.offer-choice:focus-visible\) \{ outline: 3px solid var\(--brand-primary\); outline-offset: 4px; \}/);
+  assert.match(scopedCSS, /body\.comparison-page \.offer-choice:focus-visible \+ span \{ outline: 3px solid var\(--brand-primary\);/);
+  assert.match(scopedCSS, /body\.comparison-page \.offer-choice-label \{[^}]*min-height: 44px;[^}]*cursor: pointer;/);
+  assert.match(scopedCSS, /body\.comparison-page \.offer \{[^}]*cursor: pointer;/);
+  const radioRule = rules.find(([, selectors]) => selectors.trim() === 'body.comparison-page .offer-choice')?.[2];
+  assert(radioRule && radioRule.includes('clip-path: inset(50%)'));
+  assert.doesNotMatch(radioRule, /display:\s*none|visibility:\s*hidden/, 'Radio tersembunyi visual harus tetap dapat difokuskan');
+  assert.match(scopedCSS, /body\.comparison-page \.offer-selection\[hidden\] \{ display: none; \}/);
+  assert.match(scopedCSS, /body\.comparison-page \.offer-benefits ul \{[^}]*color: var\(--brand-muted-foreground\);/);
+  assert.match(scopedCSS, /body\.comparison-page \.offer-difference \{[^}]*color: var\(--brand-muted-foreground\);/);
+  assert.match(scopedCSS, /body\.comparison-page #selection-summary \{[^}]*overflow-wrap: anywhere;/);
 
   // Compute contrast from the actual managed tokens and sRGB gradient stops.
   const tokenCSS = sources.get('src/styles/design-tokens.css');

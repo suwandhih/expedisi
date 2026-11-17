@@ -207,15 +207,29 @@ body.comparison-page .fields .bc-select,
 body.comparison-page .fields .bc-btn { min-height: 52px; }
 body.comparison-page .offers { grid-template-columns: repeat(3, minmax(0, 1fr)); align-items: stretch; }
 body.comparison-page .offer {
+  position: relative;
   display: flex;
   flex-direction: column;
   border-top: 4px solid var(--brand-border);
+  cursor: pointer;
 }
-body.comparison-page .offer--best {
+body.comparison-page .offer--selected {
   border-color: var(--brand-primary);
+  background: color-mix(in srgb, var(--brand-secondary) 35%, var(--brand-card));
   box-shadow: 0 24px 48px -20px color-mix(in srgb, var(--brand-primary) 32%, transparent);
 }
-body.comparison-page .offer--best .vendor-icon { background: var(--brand-primary); color: var(--brand-primary-foreground); }
+body.comparison-page .offer--selected .vendor-icon { background: var(--brand-primary); color: var(--brand-primary-foreground); }
+body.comparison-page .offer:has(.offer-choice:focus-visible) { outline: 3px solid var(--brand-primary); outline-offset: 4px; }
+body.comparison-page .offer-choice-label { position: relative; display: flex; align-items: center; min-height: 44px; margin-bottom: 12px; color: var(--brand-primary); font-weight: 700; cursor: pointer; }
+body.comparison-page .offer-choice { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; border: 0; }
+body.comparison-page .offer-choice:focus-visible + span { outline: 3px solid var(--brand-primary); outline-offset: 4px; border-radius: var(--radius-sm); }
+body.comparison-page .offer-selection[hidden] { display: none; }
+body.comparison-page .offer-difference { margin: 0 0 20px; color: var(--brand-muted-foreground); font-size: 13px; }
+body.comparison-page .offer-benefits { margin-bottom: 20px; font-size: 13px; }
+body.comparison-page .offer-benefits h4 { margin: 0 0 8px; font-size: inherit; }
+body.comparison-page .offer-benefits ul { margin: 0; padding-left: 20px; color: var(--brand-muted-foreground); }
+body.comparison-page .offer-benefits li + li { margin-top: 6px; }
+body.comparison-page #selection-summary { margin-top: 16px; font-weight: 600; overflow-wrap: anywhere; }
 body.comparison-page .offer-tags { margin-bottom: 24px; }
 body.comparison-page .offer-data { flex: 1; }
 body.comparison-page .offer-data .price { font-size: clamp(32px, 3vw, 42px); line-height: 1.2; }
@@ -234,7 +248,7 @@ body.comparison-page .offer-meter > span {
   border-radius: inherit;
   background: color-mix(in srgb, var(--brand-primary) 55%, var(--brand-secondary));
 }
-body.comparison-page .offer--best .offer-meter > span { background: var(--brand-primary); }
+body.comparison-page .offer--selected .offer-meter > span { background: var(--brand-primary); }
 body.comparison-page .offer details { padding-top: 8px; }
 body.comparison-page .offer summary { display: list-item; min-height: 44px; padding-block: 12px; }
 body.comparison-page .offer details div { align-items: baseline; }
