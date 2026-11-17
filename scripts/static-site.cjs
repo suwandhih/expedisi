@@ -114,7 +114,10 @@ function check() {
   assert.match(raja, /<div class="intro-card" aria-hidden="true">/);
   assert.match(raja, /aria-current="page" href="index\.html"/);
   assert.match(raja, /href="surat\.html#pelanggan"/);
-  assert.match(raja, /href="surat\.html">Buka surat &amp; dokumen →<\/a>/);
+  assert.match(raja, /<button id="create-quotation" class="bc-btn bc-btn--accent bc-btn--lg" type="button"[^>]*>Buat surat penawaran →<\/button>/);
+  assert.match(raja, /id="quotation-status"[^>]*role="alert"[^>]*hidden/);
+  assert.match(raja, /href="surat\.html">Surat &amp; dokumen<\/a>/, 'Navigasi dokumen tetap tersedia');
+  assert.match(raja, /<script defer src="tarif-contoh\.js"><\/script>\s*<script defer src="penawaran\.js"><\/script>\s*<script defer src="harga\.js"><\/script>/, 'Modul data dan penawaran harus dimuat sebelum perbandingan');
   for (const [id, label] of [['origin', 'Negara asal'], ['destination', 'Negara tujuan'], ['mode', 'MODA PENGIRIMAN']]) {
     assert(raja.includes(`for="${id}">${label}</label>`), `${id}: label kontrol harus dipertahankan`);
   }

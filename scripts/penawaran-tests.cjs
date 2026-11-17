@@ -38,8 +38,70 @@ module.exports = function checkQuotation(sources, sandbox) {
       }
     }
   }
+  const comparisonOffers = [];
+  const data = sandbox.window.RajaKirimData;
+  for (const direction of ['ekspor', 'impor']) {
+    for (const country of data.countries) {
+      for (const mode of ['Udara', 'LCL', 'FCL']) {
+        for (const vendor of data.vendors) {
+          // Nilai terhitung sengaja terpisah dari rumus tarif untuk mendeteksi hitung ulang.
+          const offer = { direction, country, mode, name: mode === 'Udara' ? vendor.air : vendor.name,
+            freight: 815.25 + vendor.adjustment, local: vendor.local,
+            total: 815.25 + vendor.adjustment + vendor.local, transit: 9 + vendor.days };
+          comparisonOffers.push(offer);
+          const before = JSON.stringify(offer);
+          const comparison = quotation.createComparisonPayload(offer, made);
+          assert(quotation.validatePayload(comparison));
+          assert(Object.isFrozen(comparison));
+          assert.deepEqual(Object.keys(comparison).sort(), ['versi', 'sumber', 'arah', 'negara', 'rute', 'layanan', 'berat', 'total', 'rincian', 'dibuat'].sort());
+          assert.equal(comparison.versi, 2);
+          assert.equal(comparison.sumber, 'perbandingan');
+          assert.equal(comparison.arah, direction);
+          assert.equal(comparison.negara, country);
+          assert.equal(comparison.rute, direction === 'ekspor' ? `Jakarta → ${country}` : `${country} → Jakarta`);
+          assert.equal(comparison.layanan, `${direction === 'ekspor' ? 'Ekspor' : 'Impor'} · ${mode === 'Udara' ? 'Udara' : `Laut · ${mode}`} · ${offer.name} (simulasi) · transit ${offer.transit} hari`);
+          assert.equal(comparison.berat, 'Belum ditentukan (estimasi per pengiriman)');
+          assert.equal(comparison.total, `${quotation.format.money(offer.total)} (≈ ${quotation.format.rupiah(offer.total * data.kurs)})`);
+          assert.equal(comparison.rincian, `Kirim ${quotation.format.money(offer.freight)} · Lokal ${quotation.format.money(offer.local)}`);
+          assert.equal(comparison.dibuat, made);
+          assert.equal(quotation.sourceLabel(comparison), 'Perbandingan harga');
+          assert(Object.values(comparison).filter((value) => typeof value === 'string').every((value) => value.length <= 300));
+          assert.equal(JSON.stringify(offer), before, 'Payload tidak boleh mengubah offer terpilih');
+        }
+      }
+    }
+  }
+  assert.equal(comparisonOffers.length, 108, 'Semua arah × negara × moda × vendor diuji');
+  const offer = comparisonOffers.find((value) => value.direction === 'impor' && value.country === 'Malaysia' && value.mode === 'LCL' && value.name === 'Pacific Bridge');
+  const comparisonPayload = quotation.createComparisonPayload(offer, made);
+  const invalidOffers = [null, [], {}, { ...offer, direction: 'domestik' }, { ...offer, country: 'Jepang' }, { ...offer, mode: 'Kereta' }, { ...offer, name: 'Vendor asing' }, { ...offer, name: 'Pacific Air Connect' }, { ...offer, total: offer.total + 1 }];
+  for (const field of Object.keys(offer)) {
+    const missing = { ...offer }; delete missing[field];
+    invalidOffers.push(missing, { ...offer, [field]: null }, { ...offer, [field]: [] }, { ...offer, [field]: '' });
+  }
+  for (const field of ['freight', 'local', 'total']) {
+    for (const value of [0, -1, NaN, Infinity, -Infinity, '100', Number.MAX_VALUE]) invalidOffers.push({ ...offer, [field]: value });
+  }
+  for (const transit of [0, -1, 1.5, NaN, Infinity, '9']) invalidOffers.push({ ...offer, transit });
+  invalidOffers.forEach((value) => assert.equal(quotation.createComparisonPayload(value, made), null));
+  assert.equal(quotation.createComparisonPayload(offer, 'kemarin'), null);
+  assert.equal(quotation.createComparisonPayload(offer, '2026-02-30T12:00:00.000Z'), null);
+  const invalidComparisons = [
+    { ...comparisonPayload, sumber: 'kalkulator' }, { ...comparisonPayload, sumber: 'x'.repeat(301) },
+    { ...comparisonPayload, versi: 1 }, { ...comparisonPayload, versi: 3 }, { ...comparisonPayload, extra: 'x' },
+    { ...comparisonPayload, rute: 'Malaysia → Indonesia' }, { ...comparisonPayload, rute: 'Jakarta → Malaysia' }
+  ];
+  for (const field of Object.keys(comparisonPayload)) {
+    const missing = { ...comparisonPayload }; delete missing[field];
+    invalidComparisons.push(missing);
+    if (field !== 'versi') invalidComparisons.push({ ...comparisonPayload, [field]: null }, { ...comparisonPayload, [field]: '' }, { ...comparisonPayload, [field]: 'x'.repeat(301) });
+  }
+  invalidComparisons.forEach((value) => assert.equal(quotation.validatePayload(value), false));
+  assert(quotation.validatePayload({ ...comparisonPayload, layanan: 'x'.repeat(300) }));
+
   const result = calculator.calculate(input, 'Australia', settings).value;
   const payload = quotation.createPayload(result, made);
+  assert.equal(quotation.sourceLabel(payload), 'Kalkulator negara');
   const noDescription = quotation.createPayload({ ...result, description: '' }, made);
   assert.equal(noDescription.layanan, 'Ekspor · Laut · LCL');
   assert(quotation.createPayload({ ...result, description: 'a'.repeat(120) }, made));
@@ -69,6 +131,10 @@ module.exports = function checkQuotation(sources, sandbox) {
     assert.deepEqual(copy(quotation.replacements(customer, payload, 'receipt')), { ...original, rincian: '—' });
     assert.deepEqual(copy(quotation.replacements(customer, null, 'quotation')), { ...original, rincian: '—' });
     assert.deepEqual(copy(quotation.replacements(customer, invalid[3], 'quotation')), { ...original, rincian: '—' });
+    const comparisonMerged = quotation.replacements(customer, comparisonPayload, 'quotation');
+    for (const key of ['rute', 'layanan', 'berat', 'total', 'rincian']) assert.equal(comparisonMerged[key], comparisonPayload[key]);
+    for (const key of ['id', 'nama', 'perusahaan', 'nomor', 'tanggal']) assert.equal(comparisonMerged[key], customer[key]);
+    assert.deepEqual(copy(quotation.replacements(customer, comparisonPayload, 'receipt')), { ...original, rincian: '—' });
     assert.deepEqual(customer, original);
   }
   assert.equal(JSON.stringify(customers), customersBefore);
@@ -94,28 +160,51 @@ module.exports = function checkQuotation(sources, sandbox) {
   assert(quotation.handoff(another, getStorage, () => {}).saved);
   assert.equal(quotation.loadPayload(getStorage).payload.negara, 'Malaysia', 'Pilihan baru mengganti hasil lama, bukan menambah riwayat');
   assert.equal(values.size, 3);
+  assert.equal(quotation.loadPayload(getStorage).payload.versi, 1);
+  assert(quotation.handoffComparison(offer, getStorage, (url) => {
+    assert.equal(JSON.parse(values.get(quotation.storageKey)).sumber, 'perbandingan', 'Simpan data perbandingan sebelum navigasi');
+    navigation.push(url);
+  }).saved);
+  assert.deepEqual(navigation, ['surat.html#dokumen', 'surat.html#dokumen']);
+  assert.equal(values.size, 3, 'Perbandingan mengganti payload kalkulator pada kunci yang sama');
+  assert.equal(quotation.loadPayload(getStorage).payload.versi, 2);
+  assert.equal(quotation.loadPayload(getStorage).payload.sumber, 'perbandingan');
+  assert.equal(quotation.loadPayload(getStorage).payload.rute, 'Malaysia → Jakarta');
+  assert.match(quotation.loadPayload(getStorage).payload.layanan, /Pacific Bridge/);
+  const previousStored = values.get(quotation.storageKey);
   const blocked = () => { throw new Error('SecurityError'); };
   const full = () => ({ setItem() { throw new Error('QuotaExceededError'); } });
   for (const denied of [blocked, full]) {
     const failure = quotation.handoff(result, denied, () => assert.fail('Dilarang navigasi bila penyimpanan gagal'));
     assert.equal(failure.saved, false);
     assert.match(failure.message, /penyimpanan browser/);
+    const comparisonFailure = quotation.handoffComparison(offer, denied, () => assert.fail('Perbandingan gagal tidak boleh navigasi'));
+    assert.equal(comparisonFailure.saved, false);
+    assert.match(comparisonFailure.message, /penyimpanan browser/);
+    assert.equal(values.get(quotation.storageKey), previousStored, 'Kegagalan simpan tidak mengubah data sebelumnya');
+  }
+  for (const invalidOffer of invalidOffers) {
+    const comparisonFailure = quotation.handoffComparison(invalidOffer, getStorage, () => assert.fail('Offer tidak valid tidak boleh navigasi'));
+    assert.equal(comparisonFailure.saved, false);
+    assert.match(comparisonFailure.message, /Hasil penawaran tidak valid/);
+    assert.equal(values.get(quotation.storageKey), previousStored);
   }
   assert.equal(quotation.handoff({}, getStorage, () => assert.fail('Dilarang navigasi bila hasil tidak valid')).saved, false);
   assert.equal(quotation.loadPayload(blocked).state, 'error');
   assert.equal(quotation.clearPayload(blocked).cleared, false);
   assert.equal(quotation.savePayload(invalid[3], getStorage).saved, false);
-  for (const raw of ['{rusak', ...invalid.map((value) => JSON.stringify(value))]) {
+  for (const raw of ['{rusak', ...invalid.map((value) => JSON.stringify(value)), ...invalidComparisons.map((value) => JSON.stringify(value))]) {
     values.set(quotation.storageKey, raw);
     const restored = quotation.loadPayload(getStorage);
     assert.equal(restored.payload, null);
     assert.equal(restored.state, 'error');
-    assert.match(restored.message, /rusak.*dihapus/);
+    assert.match(restored.message, /^Data penawaran tersimpan rusak.*dihapus/);
+    assert.doesNotMatch(restored.message, /Kalkulator negara/);
     assert.equal(values.has(quotation.storageKey), false);
   }
   const removeDenied = quotation.loadPayload(() => ({ getItem: () => '{rusak', removeItem() { throw new Error('SecurityError'); } }));
   assert.equal(removeDenied.payload, null);
-  assert.match(removeDenied.message, /diabaikan.*belum dapat dihapus/);
+  assert.match(removeDenied.message, /^Data penawaran tersimpan rusak.*diabaikan.*belum dapat dihapus/);
   assert(quotation.savePayload(payload, getStorage).saved);
   assert(quotation.clearPayload(getStorage).cleared);
   assert.equal(quotation.loadPayload(getStorage).payload, null);
@@ -149,6 +238,10 @@ module.exports = function checkQuotation(sources, sandbox) {
   sourceContext.loadQuotationSource(); sourceContext.renderQuotationSource();
   assert.equal(nodes.get('quotation-source').hidden, false);
   assert.equal(nodes.get('quotation-source-text').textContent, `Data dari Kalkulator negara: ${payload.rute} · ${payload.total}`);
+  quotation.savePayload(comparisonPayload, getStorage);
+  sourceContext.loadQuotationSource(); sourceContext.renderQuotationSource();
+  assert.equal(nodes.get('quotation-source').hidden, false);
+  assert.equal(nodes.get('quotation-source-text').textContent, `Data dari Perbandingan harga: ${comparisonPayload.rute} · ${comparisonPayload.total}`);
   nodes.get('reset-quotation-source').click(); sourceContext.renderQuotationSource();
   assert.equal(renders, 1);
   assert.equal(nodes.get('quotation-source').hidden, true);
@@ -180,6 +273,9 @@ module.exports = function checkQuotation(sources, sandbox) {
   assert.equal(target.childNodes[1].tagName, 'B');
   assert.equal(target.childNodes[1].childNodes[0].nodeValue, payload.rute);
   assert.equal(values.get('raja-kirim-surat-v1'), customersBefore);
+  const comparisonTarget = node('DIV');
+  sanitizer.cleanNode(text('{{rute}} | {{layanan}} | {{berat}} | {{total}} | {{rincian}}'), comparisonTarget, quotation.replacements(customers[0], comparisonPayload, 'quotation'));
+  assert.equal(comparisonTarget.childNodes[0].nodeValue, ['rute', 'layanan', 'berat', 'total', 'rincian'].map((key) => comparisonPayload[key]).join(' | '));
 
   const defaultsSource = surat.slice(surat.indexOf('const defaults ='), surat.indexOf('const templates ='));
   const defaults = new Script(defaultsSource + '\ndefaults;').runInNewContext({}, { timeout: 1000 });
@@ -202,5 +298,5 @@ module.exports = function checkQuotation(sources, sandbox) {
   assert.match(printSource, /@media print\{body\{margin:0;padding:0\}header,small,mark\{color:inherit\}mark\{background:transparent\}\}/);
   assert.match(printSource, /body\.append\(content\.cloneNode\(true\)\)/);
   assert.match(printSource, /printWindow\.print\(\)/);
-  console.log(`OK penawaran: ${cases} payload negara × arah × moda; batas/korupsi/kuota/storage-denied, navigasi setelah simpan, beberapa pelanggan tanpa mutasi, receipt tidak berubah, reset/banner, hash Dokumen, dan sanitizer teks.`);
+  console.log(`OK penawaran: ${cases} payload kalkulator + ${comparisonOffers.length} pilihan perbandingan; batas/korupsi/kuota/storage-denied, navigasi setelah simpan, penggantian sumber, pelanggan/receipt tidak berubah, reset/banner, hash Dokumen, dan sanitizer teks.`);
 };

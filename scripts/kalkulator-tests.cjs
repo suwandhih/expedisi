@@ -32,8 +32,8 @@ module.exports = function checkCalculator(sources, sandbox) {
   // Stub terbatas untuk kontrak render/event perbandingan, bukan simulasi browser.
   function comparisonNodes() {
     const nodes = new Map();
-    for (const selector of ['#origin', '#destination', '#origin-label', '#destination-label', '#mode', '#summary', '#count', '#offers', '#results-note', '#selection-summary', '#rate-form', '[name="direction"]:checked']) {
-      nodes.set(selector, { value: '', innerHTML: '', textContent: '', events: new Map(), addEventListener(event, handler) { this.events.set(event, handler); } });
+    for (const selector of ['#origin', '#destination', '#origin-label', '#destination-label', '#mode', '#summary', '#count', '#offers', '#results-note', '#selection-summary', '#create-quotation', '#quotation-status', '#rate-form', '[name="direction"]:checked']) {
+      nodes.set(selector, { value: '', innerHTML: '', textContent: '', attributes: new Map(), setAttribute(key, value) { this.attributes.set(key, value); }, events: new Map(), addEventListener(event, handler) { this.events.set(event, handler); } });
     }
     const offers = nodes.get('#offers');
     Object.defineProperty(offers, 'innerHTML', {
@@ -121,6 +121,8 @@ module.exports = function checkCalculator(sources, sandbox) {
         assert.equal((output.match(/ offer--best\b/g) || []).length, 1, 'Hanya satu kartu termurah');
         assert.match(output.trim(), /^<article class="offer bc-card bc-card--raised offer--best offer--selected"/, 'Pilih harga terendah setelah render');
         assertSelected(nodes, 0);
+        assert.equal(nodes.get('#create-quotation').attributes.get('aria-label'), `Buat surat penawaran untuk ${names[0]} · ${route}`);
+        assert.equal(nodes.get('#quotation-status').hidden, true);
         assert.equal((output.match(/\schecked>/g) || []).length, 1, 'Markup awal hanya mencentang satu radio');
         assert.equal((output.match(/type="radio" name="offer"/g) || []).length, 3);
         assert.equal((output.match(/>Terpilih<\/span>/g) || []).length, 3);
@@ -174,10 +176,17 @@ module.exports = function checkCalculator(sources, sandbox) {
   const radios = ['ekspor', 'impor'].map((value) => ({ value, events: new Map(), addEventListener(event, handler) { this.events.set(event, handler); } }));
   eventNodes.get('[name="direction"]:checked').value = 'ekspor';
   eventNodes.get('#mode').value = 'LCL';
-  new Script(sources.get('raja-kirim/harga.js')).runInNewContext({
-    window: { RajaKirimData: data },
-    document: { querySelector: (selector) => eventNodes.get(selector), querySelectorAll: () => radios }
-  }, { timeout: 1000 });
+  const quotationValues = new Map();
+  const quotationNavigation = [];
+  let storageDenied = false;
+  const eventWindow = {
+    RajaKirimData: data,
+    localStorage: { setItem(key, value) { if (storageDenied) throw new Error('QuotaExceededError'); quotationValues.set(key, value); } },
+    location: { assign(url) { assert(quotationValues.has('raja-kirim-penawaran-v1'), 'Simpan sebelum berpindah'); quotationNavigation.push(url); } }
+  };
+  const eventContext = { window: eventWindow, document: { querySelector: (selector) => eventNodes.get(selector), querySelectorAll: () => radios } };
+  new Script(sources.get('raja-kirim/penawaran.js')).runInNewContext(eventContext, { timeout: 1000 });
+  new Script(sources.get('raja-kirim/harga.js')).runInNewContext(eventContext, { timeout: 1000 });
   const originNode = eventNodes.get('#origin');
   const destinationNode = eventNodes.get('#destination');
   const countryOptions = countries.map((country) => `<option>${country}</option>`).join('');
@@ -232,6 +241,28 @@ module.exports = function checkCalculator(sources, sandbox) {
   offersNode.events.get('change')({ target: offersNode.cards[1].radio });
   assertSelected(eventNodes, 1);
   assert.equal(selectionSummary.textContent, expectedMalaysiaSummary(1));
+  const quotationButton = eventNodes.get('#create-quotation');
+  const quotationStatus = eventNodes.get('#quotation-status');
+  const quoteFormat = eventWindow.RajaKirimPenawaran.format;
+  assert.equal(quotationButton.attributes.get('aria-label'), 'Buat surat penawaran untuk Pacific Bridge · Malaysia → Jakarta');
+  quotationButton.events.get('click')();
+  let savedComparison = JSON.parse(quotationValues.get('raja-kirim-penawaran-v1'));
+  assert.equal(savedComparison.versi, 2);
+  assert.equal(savedComparison.sumber, 'perbandingan');
+  assert.equal(savedComparison.rute, 'Malaysia → Jakarta');
+  assert.equal(savedComparison.layanan, 'Impor · Laut · LCL · Pacific Bridge (simulasi) · transit 26 hari');
+  assert.equal(savedComparison.total, `${quoteFormat.money(1195)} (≈ ${quoteFormat.rupiah(1195 * 16000)})`);
+  assert.equal(savedComparison.rincian, `Kirim ${quoteFormat.money(1040)} · Lokal ${quoteFormat.money(155)}`);
+  assert.deepEqual(quotationNavigation, ['surat.html#dokumen']);
+  assert.equal(quotationStatus.hidden, true);
+  const beforeFailure = quotationValues.get('raja-kirim-penawaran-v1');
+  storageDenied = true;
+  quotationButton.events.get('click')();
+  assert.equal(quotationNavigation.length, 1, 'Penyimpanan gagal tidak boleh memindahkan halaman');
+  assert.equal(quotationValues.get('raja-kirim-penawaran-v1'), beforeFailure);
+  assert.equal(quotationStatus.hidden, false);
+  assert.match(quotationStatus.textContent, /penyimpanan browser/);
+  storageDenied = false;
   for (const [sourceIndex, key, expectedIndex] of [[1, 'ArrowRight', 2], [2, 'ArrowDown', 0], [0, 'ArrowLeft', 2], [2, 'ArrowUp', 1]]) {
     let keyPrevented = false;
     offersNode.events.get('keydown')({ key, target: offersNode.cards[sourceIndex].radio, preventDefault() { keyPrevented = true; } });
@@ -239,6 +270,8 @@ module.exports = function checkCalculator(sources, sandbox) {
     assertSelected(eventNodes, expectedIndex);
     assert.equal(offersNode.focused, offersNode.cards[expectedIndex].radio);
     assert.equal(selectionSummary.textContent, expectedMalaysiaSummary(expectedIndex));
+    assert.equal(quotationStatus.hidden, true, 'Pilihan baru membersihkan pesan galat lama');
+    assert.equal(quotationButton.attributes.get('aria-label'), `Buat surat penawaran untuk ${legacyVendors[expectedIndex].name} · Malaysia → Jakarta`);
   }
   offersNode.events.get('keydown')({ key: 'Tab', target: offersNode.cards[1].radio, preventDefault() { assert.fail('Tab tetap berperilaku native'); } });
   assertSelected(eventNodes, 1);
@@ -268,6 +301,21 @@ module.exports = function checkCalculator(sources, sandbox) {
   assert.equal(destinationNode.disabled, false);
   assert.equal(eventNodes.get('#origin-label').textContent, 'Kota asal');
   assert.equal(eventNodes.get('#destination-label').textContent, 'Negara tujuan');
+  quotationButton.events.get('click')();
+  savedComparison = JSON.parse(quotationValues.get('raja-kirim-penawaran-v1'));
+  assert.equal(savedComparison.rute, 'Australia → Jakarta', 'Gunakan hasil terakhir, bukan formulir yang belum dibandingkan');
+  assert.equal(savedComparison.layanan, 'Impor · Udara · Atlas Air Freight (simulasi) · transit 8 hari');
+  assert.equal(savedComparison.total, `${quoteFormat.money(1375)} (≈ ${quoteFormat.rupiah(1375 * 16000)})`);
+  assert.equal(savedComparison.rincian, `Kirim ${quoteFormat.money(1165)} · Lokal ${quoteFormat.money(210)}`);
+  assert.equal(quotationNavigation.length, 2);
+  const validComparisonPayload = quotationValues.get('raja-kirim-penawaran-v1');
+  eventNodes.get('#mode').value = 'Tidak valid';
+  eventNodes.get('#rate-form').events.get('submit')({ preventDefault() {} });
+  quotationButton.events.get('click')();
+  assert.equal(quotationNavigation.length, 2, 'Data tidak valid tidak boleh berpindah halaman');
+  assert.equal(quotationValues.get('raja-kirim-penawaran-v1'), validComparisonPayload);
+  assert.equal(quotationStatus.hidden, false);
+  assert.match(quotationStatus.textContent, /Hasil penawaran tidak valid/);
 
   new Script(sources.get('raja-kirim/kalkulator.js'), { filename: 'kalkulator.js' }).runInNewContext(sandbox, { timeout: 1000 });
   const calculator = sandbox.window.RajaKirimKalkulator;

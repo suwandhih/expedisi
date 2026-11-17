@@ -45,7 +45,8 @@ module.exports = function checkBrand(sources) {
   assert.match(raja, /class="intro-link bc-btn bc-btn--lg bc-btn--pill" href="#form-title">Mulai bandingkan ↘/);
   assert.match(raja, /class="search-card comparison-planner bc-card bc-card--raised"/);
   assert.match(raja, /class="next bc-card"/);
-  assert.match(raja, /class="bc-btn bc-btn--accent bc-btn--lg" href="surat\.html">Buka surat &amp; dokumen →/);
+  assert.match(raja, /<button id="create-quotation" class="bc-btn bc-btn--accent bc-btn--lg" type="button" aria-describedby="selection-summary quotation-status">Buat surat penawaran →<\/button>/);
+  assert.match(raja, /id="quotation-status" class="bc-alert" role="alert"/);
   assert.equal((raja.match(/class="bc-tile"/g) || []).length, 2);
   assert.equal((raja.match(/aria-current="page"/g) || []).length, 1);
   for (const link of ['index.html', 'kalkulator.html', 'surat.html#pelanggan', 'surat.html']) {

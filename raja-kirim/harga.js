@@ -3,6 +3,8 @@ const origin = document.querySelector('#origin');
 const destination = document.querySelector('#destination');
 const mode = document.querySelector('#mode');
 const offersNode = document.querySelector('#offers');
+const quotationButton = document.querySelector('#create-quotation');
+const quotationStatus = document.querySelector('#quotation-status');
 let lastComparison = null;
 const { countries, vendors, adjustments, kurs } = window.RajaKirimData;
 const money = (amount) => new Intl.NumberFormat('id-ID', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(amount);
@@ -42,6 +44,9 @@ function selectOffer(index, focus = false) {
   const name = shipmentMode === 'Udara' ? offer.air : offer.name;
   const service = shipmentMode === 'Udara' ? 'Udara' : `Laut · ${shipmentMode}`;
   document.querySelector('#selection-summary').textContent = `Pilihan Anda: ${name} (simulasi) · ${route} · ${service} · ${money(offer.total)} (≈ ${rupiah(offer.total * kurs)}) · transit ${offer.transit} hari · ${offerDifference(offer, index)}`;
+  quotationButton.setAttribute('aria-label', `Buat surat penawaran untuk ${name} · ${route}`);
+  quotationStatus.textContent = '';
+  quotationStatus.hidden = true;
 }
 function renderOffers() {
   const direction = document.querySelector('[name="direction"]:checked').value;
@@ -99,6 +104,17 @@ offersNode.addEventListener('keydown', (event) => {
   const step = event.key === 'ArrowRight' || event.key === 'ArrowDown' ? 1 : -1;
   const count = lastComparison.offers.length;
   selectOffer((Number(event.target.value) + step + count) % count, true);
+});
+quotationButton.addEventListener('click', () => {
+  let selected = null;
+  if (lastComparison) {
+    const { offers, selectedIndex, direction, country, mode: shipmentMode } = lastComparison;
+    const offer = offers[selectedIndex];
+    selected = { ...offer, direction, country, mode: shipmentMode, name: shipmentMode === 'Udara' ? offer.air : offer.name };
+  }
+  const saved = window.RajaKirimPenawaran.handoffComparison(selected);
+  quotationStatus.textContent = saved.message;
+  quotationStatus.hidden = saved.saved;
 });
 document.querySelectorAll('[name="direction"]').forEach((input) => input.addEventListener('change', setRoute));
 document.querySelector('#rate-form').addEventListener('submit', (event) => { event.preventDefault(); renderOffers(); });

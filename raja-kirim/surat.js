@@ -366,7 +366,7 @@ function loadQuotationSource() {
 }
 function renderQuotationSource() {
   $('quotation-source').hidden = !quotationPayload;
-  $('quotation-source-text').textContent = quotationPayload ? `Data dari Kalkulator negara: ${quotationPayload.rute} · ${quotationPayload.total}` : '';
+  $('quotation-source-text').textContent = quotationPayload ? `Data dari ${quotation.sourceLabel(quotationPayload)}: ${quotationPayload.rute} · ${quotationPayload.total}` : '';
 }
 $('reset-quotation-source').addEventListener('click', () => {
   const removed = quotation.clearPayload();
